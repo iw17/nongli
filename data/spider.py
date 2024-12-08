@@ -1,3 +1,8 @@
+'''
+Pre-calculate and fetch data and generate raw data text file.
+Note: Do not spider too frequently or requests may be blocked.
+'''
+
 import os
 import typing as tp
 
@@ -11,7 +16,6 @@ def value_input(elem: WebElement, value: int) -> None:
     elem.send_keys(f'{value}\n')
 
 def spider_js(url: str, batch: int, out_file: str) -> None:
-    '''Do not spider frequently or requests will be blocked'''
     with open(out_file, 'w'):
         pass
     # use your preferred browser
