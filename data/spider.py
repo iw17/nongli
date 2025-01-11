@@ -1,5 +1,5 @@
 '''
-Pre-calculate and fetch data and generate raw data text file.
+Fetches and calculates data and generates raw data text file.
 Note: Do not spider too frequently or requests may be blocked.
 '''
 
@@ -18,6 +18,8 @@ def value_input(elem: WebElement, value: int) -> None:
 def spider_js(url: str, batch: int, out_file: str) -> None:
     with open(out_file, 'w'):
         pass
+    MIN: int = -5000
+    MAX: int = 10000
     # use your preferred browser
     with webdriver.Firefox() as driver:
         driver.get(url)
@@ -25,7 +27,7 @@ def spider_js(url: str, batch: int, out_file: str) -> None:
         ninput: WebElement = driver.find_element(By.ID, 'Cp2_n')
         value_input(elem=ninput, value=500)
         yinput: WebElement = driver.find_element(By.ID, 'Cp2_y')
-        for year in range(0, 10000 + 1, batch):
+        for year in range(MIN, MAX + 1, batch):
             value_input(elem=yinput, value=year)
             driver.execute_script('getNianLiN()')
             try:
