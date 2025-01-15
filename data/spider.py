@@ -25,12 +25,11 @@ def value_input(elem: WebElement, value: int) -> None:
     elem.send_keys(f'{value}\n')
 
 
-def spider_js(url: str, batch: int, out_file: str) -> None:
+def spider_js(batch: int, out_file: str) -> None:
     '''
     Fetches `nongli` data via JavaScript in the webdriver.
 
     Args:
-        url (str): from where the `nongli` data are fetched
         batch (int): how many `sui`s displayed per script
         out_file (str): path to generated raw data text file
     Raises:
@@ -43,7 +42,7 @@ def spider_js(url: str, batch: int, out_file: str) -> None:
     MAX: int = 10000
     # use your preferred browser
     with webdriver.Firefox() as driver:
-        driver.get(url)
+        driver.get('https://sxwnl.com/super')
         driver.execute_script('showPage(2)')
         ninput: WebElement = driver.find_element(By.ID, 'Cp2_n')
         value_input(elem=ninput, value=500)
@@ -62,10 +61,9 @@ def spider_js(url: str, batch: int, out_file: str) -> None:
 
 
 def main() -> None:
-    URL_SXWNL: tp.LiteralString = 'https://sxwnl.com/super'
     here: str = os.path.dirname(__file__)
     out_txt: str = os.path.join(here, 'build', 'raw.txt')
-    spider_js(url=URL_SXWNL, batch=500, out_file=out_txt)
+    spider_js(batch=500, out_file=out_txt)
 
 
 if __name__ == '__main__':
