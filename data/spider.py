@@ -36,8 +36,6 @@ def spider_js(batch: int, out_file: str) -> None:
         WebDriverException: on bad connection to the site
     '''
 
-    with open(out_file, 'w'):
-        pass
     MIN: int = -5000
     MAX: int = 10000
     # use your preferred browser
@@ -47,6 +45,8 @@ def spider_js(batch: int, out_file: str) -> None:
         ninput: WebElement = driver.find_element(By.ID, 'Cp2_n')
         value_input(elem=ninput, value=500)
         yinput: WebElement = driver.find_element(By.ID, 'Cp2_y')
+        with open(out_file, 'w'):
+            pass
         for year in range(MIN, MAX + 1, batch):
             value_input(elem=yinput, value=year)
             driver.execute_script('getNianLiN()')
