@@ -194,6 +194,7 @@ class Yuefen(tp.NamedTuple):
     yue: int
     dax: bool
 
+
     @staticmethod
     def parse(hanzi: str) -> 'Yuefen':
         '''
@@ -221,6 +222,7 @@ class Yuefen(tp.NamedTuple):
         dax: bool = dayue_index(hanzi[-1:])
         return Yuefen(run, yue, dax)
 
+
     @property
     def abbr(self: tp.Self) -> str:
         '''
@@ -239,6 +241,7 @@ class Yuefen(tp.NamedTuple):
         pr: str = run_abbr(self.run)
         xd: str = dayue_abbr(self.dax)
         return f'{pr}{self.yue:02d}{xd}'
+
 
     @staticmethod
     def to_abbr(hanzi: str) -> str:
