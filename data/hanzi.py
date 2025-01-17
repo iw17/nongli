@@ -224,6 +224,24 @@ class Yuefen(tp.NamedTuple):
 
 
     @property
+    def ryue(self: tp.Self) -> int:
+        '''
+        Gets the `ryue` value of a `yuefen` info.
+
+        Returns:
+            int: `ryue` = `run` + 2 * `yue`
+
+        Examples:
+            >>> Yuefen(False, 1, True).ryue
+            2
+            >>> Yuefen(True, 1, True).ryue
+            3
+        '''
+
+        return (self.yue << 1) | int(self.run)
+
+
+    @property
     def abbr(self: tp.Self) -> str:
         '''
         Gets the abbr of a `yuefen` info itself.
