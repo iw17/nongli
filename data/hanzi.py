@@ -190,6 +190,7 @@ class Yuefen(tp.NamedTuple):
         yue (int): index of the `yue` starting with 1
         dax (bool): whether the `yue` is `da`
     '''
+
     run: bool
     yue: int
     dax: bool
@@ -232,9 +233,9 @@ class Yuefen(tp.NamedTuple):
             int: `ryue` = `run` + 2 * `yue`
 
         Examples:
-            >>> Yuefen(False, 1, True).ryue
+            >>> Yuefen(run=False, yue=1, dax=True).ryue
             2
-            >>> Yuefen(True, 1, True).ryue
+            >>> Yuefen(run=True, yue=1, dax=True).ryue
             3
         '''
 
@@ -250,9 +251,9 @@ class Yuefen(tp.NamedTuple):
             str: concatenated abbrs of the 3 attributes
 
         Examples:
-            >>> Yuefen(False, 2, True).abbr
+            >>> Yuefen(run=False, yue=2, dax=True).abbr
             'p02d'
-            >>> Yuefen(True, 11, False).abbr
+            >>> Yuefen(run=True, yue=11, dax=False).abbr
             'r11x'
         '''
 
