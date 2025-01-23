@@ -196,8 +196,8 @@ class Yuefen(tp.NamedTuple):
     dax: bool
 
 
-    @staticmethod
-    def parse(hanzi: str) -> 'Yuefen':
+    @classmethod
+    def parse(cls: type[tp.Self], hanzi: str) -> tp.Self:
         '''
         Constructs a `Yuefen` tuple using the `hanzi` input.
 
@@ -221,7 +221,7 @@ class Yuefen(tp.NamedTuple):
         run: bool = run_index(hanzi[:-3])
         yue: int = lunar_index(hanzi[-3:-1], start=1)
         dax: bool = dayue_index(hanzi[-1:])
-        return Yuefen(run, yue, dax)
+        return cls(run, yue, dax)
 
 
     @property
@@ -260,28 +260,3 @@ class Yuefen(tp.NamedTuple):
         pr: str = run_abbr(self.run)
         xd: str = dayue_abbr(self.dax)
         return f'{pr}{self.yue:02d}{xd}'
-
-
-    @staticmethod
-    def to_abbr(hanzi: str) -> str:
-        '''
-        Casts the `hanzi` of a `yuefen` info to its abbr.
-
-        Args:
-            hanzi (str): name of the `yuefen` info input
-        Returns:
-            str: concatenated abbrs of the 3 attributes
-        Raises:
-            ValueError: when the input is not well-parsed
-
-        Examples:
-            >>> Yuefen.to_abbr('二月大')
-            'p02d'
-            >>> Yuefen.to_abbr('闰十一小')
-            'r11x'
-            >>> Yuefen.to_abbr('一二三') # invalid
-            ValueError: '一二' is not in list
-        '''
-
-        info: Yuefen = Yuefen.parse(hanzi)
-        return info.abbr
