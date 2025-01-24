@@ -140,7 +140,7 @@ class Dati(tp.NamedTuple):
 
 
     @property
-    def secs_since_epoch(self: tp.Self) -> int:
+    def secs(self: tp.Self) -> int:
         '''
         Gets seconds since Unix Epoch (1970-01-01 00:00:00 UTC).
 
@@ -162,9 +162,7 @@ class Dati(tp.NamedTuple):
             int: seconds from `that` incl. to `self` excl.
         '''
 
-        secs_this: int = self.secs_since_epoch
-        secs_that: int = that.secs_since_epoch
-        return secs_this - secs_that
+        return self.secs - that.secs
 
 
     def __str__(self: tp.Self) -> str:
