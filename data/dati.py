@@ -41,7 +41,7 @@ class Date(tp.NamedTuple):
             q2, r2 = divmod(r1, 4)
             days += q2 * 1461 + r2 * 365
         else:
-            days += 10 if y <= 1582 else 0
+            days += 10 * (self < (1582, 10, 10))
             q, r = divmod(y - 1600, 4)
             days += q * 1461 + r * 365
         # translates from 1600-03-01 to 1970-01-01
