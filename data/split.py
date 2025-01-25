@@ -228,17 +228,17 @@ class Split:
         line = in_fp.readline().strip()
         item_lu: list[Item] = []
         item_so: list[Item] = []
-        sep: str = ' ' * 4
-        shuo, *jieqis = line.split(sep)
+        SEP: str = ' ' * 4
+        shuo, *jieqis = line.split(SEP)
         info, item = shuo.split(maxsplit=1)
         self.lead_jq: int = hz.solar_index(jieqis[0][:2])
         item_lu.append(parse_item(item))
         item_so.extend(map(parse_item, jieqis))
         # other item lines
         while (line := in_fp.readline().strip()):
-            if sep not in line:
+            if SEP not in line:
                 continue
-            shuo, *jieqis = line.split(sep)
+            shuo, *jieqis = line.split(SEP)
             item_lu.append(parse_item(shuo))
             item_so.extend(map(parse_item, jieqis))
         else: # last item line
@@ -284,12 +284,12 @@ class Split:
             self.runs_lu.extend(runs)
 
 
-    def _calc_data_lu(self: tp.Self, secs: bool) -> list[str]:
+    def _calc_data_lu(self: tp.Self, csv: bool) -> list[str]:
         '''
         Calculates lunar data (instants of `shuo`) lists.
 
         Args:
-            secs (bool): generates whether UTC timestamps or datis
+            csv (bool): generates CSV-formatted digit-only data
         Returns:
             list[str]: the well-formatted lunar `shuo` data list
         '''
@@ -298,30 +298,31 @@ class Split:
         runs: list[bool] = self.runs_lu
         data_lu: list[str] = []
         n, y = self.lead_yr - 1, 11 # nian, yue
+        SEP: str = ',' if csv else '.'
         for run, old, new in zip(runs[:-1], datis[:-1], datis[1:]):
             if run:
                 n, y = (n - 1, 12) if y <= 1 else (n, y - 1)
-            dax: bool = new.date.days_from(old.date) >= 30
-            yuefen: hz.Yuefen = hz.Yuefen(run, y, dax)
-            prefix: str = f'{n:05d}.{yuefen.abbr}'
-            datum: str = f'{old.secs:+013d}' if secs else str(old)
-            data_lu.append(f'{prefix}.{datum}')
+            days: int = new.date.days_from(old.date)
+            yuefen: hz.Yuefen = hz.Yuefen(run, y, days >= 30)
+            info: str = f'{yuefen.ryue:02d}' if csv else yuefen.abbr
+            item: str = f'{old.secs:+013d}' if csv else str(old)
+            data_lu.append(f'{n:05d}{SEP}{info}{SEP}{item}')
             n, y = (n + 1, 1) if y >= 12 else (n, y + 1)
         else:
             yuefen: hz.Yuefen = hz.Yuefen(runs[-1], y, self.last_dy)
-            prefix: str = f'{n:05d}.{yuefen.abbr}'
             last: dt.Dati = self.dati_lu[-1]
-            datum: str = f'{last.secs:+013d}' if secs else str(last)
-            data_lu.append(f'{prefix}.{datum}')
+            info: str = f'{yuefen.ryue:02d}' if csv else yuefen.abbr
+            item: str = f'{last.secs:+013d}' if csv else str(last)
+            data_lu.append(f'{n:05d}{SEP}{info}{SEP}{item}')
         return data_lu
 
 
-    def _calc_data_so(self: tp.Self, secs: bool) -> list[str]:
+    def _calc_data_so(self: tp.Self, csv: bool) -> list[str]:
         '''
         Calculates solar data (instants of `jieqi`) lists.
 
         Args:
-            secs (bool): generates whether UTC timestamps or datis
+            csv (bool): generates CSV-formatted digit-only data
         Returns:
             list[str]: the well-formatted solar `jieqi` data list
         '''
@@ -329,11 +330,11 @@ class Split:
         data_so: list[str] = []
         j: int = self.lead_jq
         s: int = self.lead_yr - int(j > 0)
+        SEP: str = ',' if csv else '.'
         for old in self.dati_so:
-            jq: str = hz.solar_abbr(j)
-            prefix: str = f'{s:05d}.{jq}'
-            datum: str = f'{old.secs:+013d}' if secs else str(old)
-            data_so.append(f'{prefix}.{datum}')
+            info: str = f'{j:02d}' if csv else hz.solar_abbr(j)
+            item: str = f'{old.secs:+013d}' if csv else str(old)
+            data_so.append(f'{s:05d}{SEP}{info}{SEP}{item}')
             s, j = (s + 1, 0) if j >= 23 else (s, j + 1)
         return data_so
 
@@ -344,27 +345,33 @@ class Split:
         self._init_runs()
 
 
-    def export(self: tp.Self, out_dir: str, secs: bool) -> None:
+    def export(self: tp.Self, out_dir: str, csv: bool) -> None:
         '''
         Calculates and exports lunar and solar data to text files.
 
         Args:
             out_dir (str): directory the data are exported to
-            secs (bool): exports whether UTC timestamps or datis
+            csv (bool): exports human-read or CSV-formatted data
         '''
 
-        suf: str = 'secs' if secs else 'dati'
-        data_lu: list[str] = self._calc_data_lu(secs)
-        out_lu: str = os.path.join(out_dir, f'lunar_{suf}.txt')
+        data_lu: list[str] = self._calc_data_lu(csv)
+        EXT: str = 'csv' if csv else 'txt'
+        out_lu: str = os.path.join(out_dir, f'lunar.{EXT}')
         with open(out_lu, 'w') as ofp_lu:
-            for lu in data_lu:
-                ofp_lu.write(f'{lu}\n')
+            if csv:
+                ofp_lu.write('cyue,nian,ryue,timestamp\n')
+            for i, lu in enumerate(data_lu):
+                cyue: str = csv * f'{i:06d},'
+                ofp_lu.write(f'{cyue}{lu}\n')
         print(f'lunar data exported to "{out_lu}"')
-        data_so: list[str] = self._calc_data_so(secs)
-        out_so: str = os.path.join(out_dir, f'solar_{suf}.txt')
+        data_so: list[str] = self._calc_data_so(csv)
+        out_so: str = os.path.join(out_dir, f'solar.{EXT}')
         with open(out_so, 'w') as ofp_so:
-            for so in data_so:
-                ofp_so.write(f'{so}\n')
+            if csv:
+                ofp_so.write('cjie,sui,jieqi,timestamp\n')
+            for i, so in enumerate(data_so):
+                cjie: str = csv * f'{i:06d},'
+                ofp_so.write(f'{cjie}{so}\n')
         print(f'solar data exported to "{out_so}"')
 
 
@@ -373,8 +380,8 @@ def main() -> None:
     build_dir: str = os.path.join(here, 'build')
     raw_path: str = os.path.join(build_dir, 'raw.txt')
     split = Split(in_file=raw_path)
-    for secs in (False, True):
-        split.export(out_dir=build_dir, secs=secs)
+    for csv in (False, True):
+        split.export(out_dir=build_dir, csv=csv)
 
 
 if __name__ == '__main__':
