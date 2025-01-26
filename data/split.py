@@ -263,7 +263,7 @@ class Split:
             runs_lu (list[bool]): whether each `yue` is `run`
         '''
 
-        ld_dz: int = 0 if self.lead_jq == 0 else 24 - self.lead_jq
+        ld_dz: int = -self.lead_jq % 24
         dati_dz: list[dt.Dati] = self.dati_so[ld_dz::24]
         date_dz: list[dt.Date] = [d.date for d in dati_dz]
         date_lu: list[dt.Date] = [d.date for d in self.dati_lu]
@@ -359,8 +359,9 @@ class Split:
         out_lu: str = os.path.join(out_dir, f'lunar.{EXT}')
         with open(out_lu, 'w') as ofp_lu:
             if csv:
-                ofp_lu.write('cyue,nian,ryue,timestamp\n')
-            for i, lu in enumerate(data_lu):
+                ofp_lu.write('cyue,nian,ryue,usec\n')
+            ld_zy: int = 2 + int(True in self.runs_lu[:3])
+            for i, lu in enumerate(data_lu, start=-ld_zy):
                 cyue: str = csv * f'{i:06d},'
                 ofp_lu.write(f'{cyue}{lu}\n')
         print(f'lunar data exported to "{out_lu}"')
@@ -368,8 +369,9 @@ class Split:
         out_so: str = os.path.join(out_dir, f'solar.{EXT}')
         with open(out_so, 'w') as ofp_so:
             if csv:
-                ofp_so.write('cjie,sui,jieqi,timestamp\n')
-            for i, so in enumerate(data_so):
+                ofp_so.write('cjie,sui,jieqi,usec\n')
+            ld_dz: int = -self.lead_jq % 24
+            for i, so in enumerate(data_so, start=-ld_dz):
                 cjie: str = csv * f'{i:06d},'
                 ofp_so.write(f'{cjie}{so}\n')
         print(f'solar data exported to "{out_so}"')
