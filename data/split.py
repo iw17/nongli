@@ -357,22 +357,26 @@ class Split:
         data_lu: list[str] = self._calc_data_lu(csv)
         EXT: str = 'csv' if csv else 'txt'
         out_lu: str = os.path.join(out_dir, f'lunar.{EXT}')
+        st_zy: str = f'01970,02' if csv else '01970.p01'
+        ep_zy: str = next(d for d in data_lu if st_zy in d)
+        ld_zy: int = data_lu.index(ep_zy)
         with open(out_lu, 'w') as ofp_lu:
             if csv:
                 ofp_lu.write('cyue,nian,ryue,usec\n')
-            ld_zy: int = 2 + int(True in self.runs_lu[:3])
             for i, lu in enumerate(data_lu, start=-ld_zy):
                 cyue: str = csv * f'{i:06d},'
                 ofp_lu.write(f'{cyue}{lu}\n')
         print(f'lunar data exported to "{out_lu}"')
         data_so: list[str] = self._calc_data_so(csv)
         out_so: str = os.path.join(out_dir, f'solar.{EXT}')
+        st_dz: str = '01970,00' if csv else '01970.dz'
+        ep_dz: str = next(d for d in data_so if st_dz in d)
+        ld_dz: int = data_so.index(ep_dz)
         with open(out_so, 'w') as ofp_so:
             if csv:
                 ofp_so.write('cjie,sui,jieqi,usec\n')
-            ld_dz: int = -self.lead_jq % 24
             for i, so in enumerate(data_so, start=-ld_dz):
-                cjie: str = csv * f'{i:06d},'
+                cjie: str = csv * f'{i:07d},'
                 ofp_so.write(f'{cjie}{so}\n')
         print(f'solar data exported to "{out_so}"')
 
