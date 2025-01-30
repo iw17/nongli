@@ -374,7 +374,7 @@ class Split:
         ld_dz: int = data_so.index(ep_dz)
         with open(out_so, 'w') as ofp_so:
             if csv:
-                ofp_so.write('cjie,sui,jieqi,usec\n')
+                ofp_so.write('cjie,sui,jie,usec\n')
             for i, so in enumerate(data_so, start=-ld_dz):
                 cjie: str = csv * f'{i:07d},'
                 ofp_so.write(f'{cjie}{so}\n')
