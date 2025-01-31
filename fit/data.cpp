@@ -47,6 +47,8 @@ constexpr inline int64_t YN_COEF[] = { 1970, 10597, 66080 };
 
 constexpr inline int64_t SS_BITS = 12;
 
+constexpr inline int64_t SS_CLIN[] = { 31556894, -62168131570 };
+
 constexpr inline int64_t SS_COEF[][7] = {
     { -403,  4368,   -289, -56352,  -65056, 421063,     6716 },
     { -253,  4159,  -4156, -52255,  -33880, 398783,  1281906 },
