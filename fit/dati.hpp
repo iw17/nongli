@@ -1,8 +1,6 @@
 #ifndef IW_DATI_HPP
 #define IW_DATI_HPP 20250206L
 
-#include <cstdint>
-
 #include "math.hpp"
 
 namespace iw17 {
@@ -35,7 +33,7 @@ constexpr int32_t date_to_uday(date locd) noexcept {
     return days - 135080;
 }
 
-constexpr auto uday_to_date(int32_t uday) noexcept {
+constexpr date uday_to_date(int32_t uday) noexcept {
     int32_t days = uday + 135080;
     int16_t y = 1600;
     quotrem<int32_t> y41 = {0, 0};
