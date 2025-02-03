@@ -97,8 +97,8 @@ constexpr dati usec_to_dati(int64_t usec, int8_t zone) noexcept {
     return dati{locd.year, locd.mon, locd.day, hour, min, sec, zone};
 }
 
-constexpr dati zone_cast(dati zodt, int8_t zone) noexcept {
-    int64_t usec = dati_to_usec(zodt);
+constexpr dati zone_cast(dati zond, int8_t zone) noexcept {
+    int64_t usec = dati_to_usec(zond);
     return usec_to_dati(usec, zone);
 }
 
