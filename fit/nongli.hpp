@@ -21,9 +21,10 @@ struct riqi { // nian, ryue, tian
 };
 
 constexpr int8_t nian_to_run(int16_t nian) noexcept {
-    nian = clip<int16_t>(nian - _data::NIAN_MIN, 0, _data::NIAN_NUM);
+    nian -= _data::NIAN_MIN;
+    nian = clip<int16_t>(nian, 0, _data::NIAN_NUM);
     uint8_t byte = _data::NR_RUNS[nian / 2];
-    int8_t run = (byte >> 4 * (nian & 1)) & 0b1111;
+    int8_t run = (byte >> 4 * (nian % 2)) & 0b1111;
     return run;
 }
 
@@ -61,8 +62,8 @@ constexpr int32_t yd_pred(int32_t cyue) noexcept {
 constexpr int32_t yd_resd(int32_t cyue) noexcept {
     cyue -= _data::CYUE_MIN;
     cyue = clip<int32_t>(cyue, 0, _data::CYUE_NUM);
-    constexpr int32_t SIZE = sizeof(_data::YD_RESD_0);
-    quotrem<int32_t> yloc = pydivmod<int32_t>(cyue, SIZE);
+    constexpr int32_t SIZE = 4 * sizeof(_data::YD_RESD_0);
+    quotrem<int32_t> yloc = cdivmod<int32_t>(cyue, SIZE);
     const uint8_t *arrd = _data::YD_ARRD[yloc.quot];
     uint8_t byte = arrd[yloc.rem / 4];
     return (byte >> 2 * (yloc.rem % 4)) & 0b0011;
@@ -92,12 +93,12 @@ constexpr int16_t cyue_to_nian(int32_t cyue) noexcept {
 
 constexpr riqi uday_to_riqi(int32_t uday) noexcept {
     int32_t cyue = uday_to_cyue(uday);
-    int32_t ud01 = cyue_to_uday(cyue);
     int16_t nian = cyue_to_nian(cyue);
     int32_t cy01 = nian_to_cyue(nian);
     int8_t nyue = cyue - cy01;
     int8_t run = nian_to_run(nian);
     int8_t ryue = (nyue + (nyue < run)) * 2 + (nyue == run);
+    int32_t ud01 = cyue_to_uday(cyue);
     int8_t tian = uday - ud01 + 1;
     return riqi{nian, ryue, tian};
 }
@@ -166,10 +167,10 @@ constexpr int64_t ss_pred(shihou shi) noexcept {
 }
 
 constexpr int64_t ss_ress(shihou shi) noexcept {
-    int32_t cjie = shihou_to_cjie(shi);
+    int32_t cjie = shihou_to_cjie(shi) - _data::CJIE_MIN;
     cjie = clip<int32_t>(cjie, 0, _data::CJIE_NUM);
-    constexpr int32_t SIZE = sizeof(_data::SS_RESS_0);
-    quotrem<int32_t> sloc = pydivmod<int32_t>(cjie, SIZE);
+    constexpr int32_t SIZE = 3 * sizeof(_data::SS_RESS_0) / 2;
+    quotrem<int32_t> sloc = cdivmod<int32_t>(cjie, SIZE);
     const uint8_t *arrs = _data::SS_ARRS[sloc.quot];
     int32_t isub = sloc.rem * 3 / 2;
     // 0x12, 0x34, 0x56 -> 0x412, 0x563
@@ -298,22 +299,24 @@ constexpr double bias_ecc(int64_t usec) noexcept {
     double oecc = (-4.193e-5 + ucen * -1.26e-7) * ucen + 1.67086e-2;
     double mano = 1.990968753e-7 * usec + 2.46231e-2;
     double s1ma = sin(mano), s2ma = sin(2.0 * mano);
-    double hour = -oecc * (2.0 * s1ma + oecc * 1.25 * s2ma);
-    return 86400.0 / TWO_PI * hour;
+    double hecc = -oecc * (2.0 * s1ma + oecc * 1.25 * s2ma);
+    return 86400.0 / TWO_PI * hecc;
 }
 
 constexpr double bias_obl(int64_t usec, int32_t cjie) noexcept {
     double ucen = (usec - 9.46728e8) / 3.15576e9;
     double eobl = (8.73e-9 * ucen + 3.49e-9) * ucen;
     eobl = (eobl + 2.26893e-4) * ucen + 4.09093e-1;
-    double t1ho = tan_in45d(eobl / 2.0), t2ho = t1ho * t1ho;
+    double tah1 = tan_in45d(eobl / 2.0);
+    double tah2 = tah1 * tah1, tah4 = tah2 * tah2;
     int32_t oind = pymod<int32_t>(cjie, 12);
-    int32_t lind = cjie - oind % 3;
-    int64_t last = cjie_to_usec(lind);
-    int64_t next = cjie_to_usec(lind + 3);
-    double spha = HALF_PI * (usec - last) / (next - last);
-    double lpha = HALF_PI / 3.0 * (lind % 12);
-    return 86400.0 / TWO_PI * t2ho * -sin(spha + lpha);
+    int64_t last = cjie_to_usec(cjie);
+    int64_t next = cjie_to_usec(cjie + 1);
+    double lpha = HALF_PI / 3.0 * (usec - last) / (next - last);
+    double spha = HALF_PI / 3.0 * oind;
+    double s1ph = sin(spha), s2ph = sin(2.0 * spha);
+    double hobl = -1.0 * tah2 * s1ph + 0.5 * tah4 * s2ph;
+    return 86400.0 / TWO_PI * hobl;
 }
 
 constexpr double bias_eot(int64_t usec, int32_t cjie) noexcept {
@@ -330,7 +333,6 @@ constexpr bazi usec_to_bazi(int64_t usec, double lon) noexcept {
     double bias_eot = _rst::bias_eot(usec, cjie);
     int64_t rsec = usec + bias_lon + bias_eot;
     int32_t bday = pydiv<int64_t>(rsec, 86400);
-    int32_t cjie = usec_to_cjie(usec);
     int32_t byue = (cjie - 3) >> 1;
     int32_t bsui = 1970 + pydiv<int32_t>(byue, 12);
     ganzhi nzhu = nian_to_ganzhi(bsui);
