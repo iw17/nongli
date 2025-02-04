@@ -71,15 +71,15 @@ constexpr double HALF_PI = PI / 2.0;
 constexpr double cos_in45d(double x) noexcept {
     double x2 = x * x;
     double cosx = 1.0;
-    if (x > 0.4276) {
+    if (x > 0.4069) {
         cosx = 1.0 - cosx * x2 / (16.0 * 15.0);
         cosx = 1.0 - cosx * x2 / (14.0 * 13.0);
     }
-    if (x > 0.1110) {
+    if (x > 0.1036) {
         cosx = 1.0 - cosx * x2 / (12.0 * 11.0);
         cosx = 1.0 - cosx * x2 / (10.0 * 9.0);
     }
-    if (x > 2.0e-4) {
+    if (x > 1.7e-4) {
         cosx = 1.0 - cosx * x2 / (8.0 * 7.0);
         cosx = 1.0 - cosx * x2 / (6.0 * 5.0);
         cosx = 1.0 - cosx * x2 / (4.0 * 3.0);
@@ -91,14 +91,15 @@ constexpr double cos_in45d(double x) noexcept {
 constexpr double sin_in45d(double x) noexcept {
     double x2 = x * x;
     double sinc = 1.0;
-    if (x > 0.5279) {
+    if (x > 0.5024) {
+        sinc = 1.0 - sinc * x2 / (17.0 * 16.0);
         sinc = 1.0 - sinc * x2 / (15.0 * 14.0);
     }
-    if (x > 0.1444) {
+    if (x > 0.1348) {
         sinc = 1.0 - sinc * x2 / (13.0 * 12.0);
         sinc = 1.0 - sinc * x2 / (11.0 * 10.0);
     }
-    if (x > 3.3e-4) {
+    if (x > 2.7e-4) {
         sinc = 1.0 - sinc * x2 / (9.0 * 8.0);
         sinc = 1.0 - sinc * x2 / (7.0 * 6.0);
         sinc = 1.0 - sinc * x2 / (5.0 * 4.0);
