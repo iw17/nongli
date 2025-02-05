@@ -15,7 +15,7 @@ constexpr int32_t usec_to_uday(int64_t usec) noexcept {
     return pydiv<int64_t>(usec + 28800, 86400);
 }
 
-struct riqi { // nian, ryue, tian
+struct riqi { // `nian`, `ryue`, `tian`
     int16_t nian;
     int8_t ryue, tian;
 };
@@ -39,8 +39,9 @@ constexpr int32_t ny_pred(int16_t nian) noexcept {
 constexpr int32_t ny_resy(int16_t nian) noexcept {
     nian -= _data::NIAN_MIN;
     nian = clip<int16_t>(nian, 0, _data::NIAN_NUM);
-    uint8_t byte = _data::NY_RESY[nian / 8];
-    return (byte >> (nian % 8)) & 1;
+    quotrem<int32_t> iloc = cdivmod<int32_t>(nian, 8);
+    uint8_t byte = _data::NY_RESY[iloc.quot];
+    return (byte >> iloc.rem) & 1;
 }
 
 } // namespace _fit
@@ -65,8 +66,9 @@ constexpr int32_t yd_resd(int32_t cyue) noexcept {
     constexpr int32_t SIZE = 4 * sizeof(_data::YD_RESD_0);
     quotrem<int32_t> yloc = cdivmod<int32_t>(cyue, SIZE);
     const uint8_t *arrd = _data::YD_ARRD[yloc.quot];
-    uint8_t byte = arrd[yloc.rem / 4];
-    return (byte >> 2 * (yloc.rem % 4)) & 0b0011;
+    quotrem<int32_t> iloc = cdivmod<int32_t>(yloc.rem, 4);
+    uint8_t byte = arrd[iloc.quot];
+    return (byte >> 2 * iloc.rem) & 0b0011;
 }
 
 } // namespace _fit
@@ -135,13 +137,13 @@ enum class jieqi: int8_t {
     lidong,     xiaoxue,    daxue,
 };
 
-struct shihou { // sui, jie
+struct shihou { // `sui`, `jie`
     int16_t sui;
     jieqi jie;
 };
 
 constexpr int32_t shihou_to_cjie(shihou shi) noexcept {
-    return 24 * int32_t(shi.sui) + int32_t(shi.jie);
+    return 24 * int32_t(shi.sui - 1970) + int32_t(shi.jie);
 }
 
 constexpr shihou cjie_to_shihou(int32_t cjie) noexcept {
@@ -169,12 +171,12 @@ constexpr int64_t ss_pred(shihou shi) noexcept {
 constexpr int64_t ss_ress(shihou shi) noexcept {
     int32_t cjie = shihou_to_cjie(shi) - _data::CJIE_MIN;
     cjie = clip<int32_t>(cjie, 0, _data::CJIE_NUM);
-    constexpr int32_t SIZE = 3 * sizeof(_data::SS_RESS_0) / 2;
+    constexpr int32_t SIZE = sizeof(_data::SS_RESS_0) / 3 * 2;
     quotrem<int32_t> sloc = cdivmod<int32_t>(cjie, SIZE);
     const uint8_t *arrs = _data::SS_ARRS[sloc.quot];
     int32_t isub = sloc.rem * 3 / 2;
-    // 0x12, 0x34, 0x56 -> 0x412, 0x563
-    int32_t pair = (arrs[isub + 1] << 8) | arrs[isub];
+    //// 0x12, 0x34, 0x56 -> 0x412, 0x563
+    uint32_t pair = (arrs[isub + 1] << 8) | arrs[isub];
     return (sloc.rem & 1) ? (pair >> 4) : (pair & 0x0fff);
 }
 
@@ -294,35 +296,30 @@ constexpr double bias_lon(double lon = 120.0) noexcept {
     return 240.0 * lon;
 }
 
-constexpr double bias_ecc(int64_t usec) noexcept {
+constexpr double bias_eot(int64_t usec, int32_t cjie) noexcept {
+    // centuries (36525 days) since J2000
     double ucen = (usec - 9.46728e8) / 3.15576e9;
+    // eccentricity of the Earth's orbit
     double oecc = (-4.193e-5 + ucen * -1.26e-7) * ucen + 1.67086e-2;
+    // mean anomaly
     double mano = 1.990968753e-7 * usec + 2.46231e-2;
     double s1ma = sin(mano), s2ma = sin(2.0 * mano);
-    double hecc = -oecc * (2.0 * s1ma + oecc * 1.25 * s2ma);
-    return 86400.0 / TWO_PI * hecc;
-}
-
-constexpr double bias_obl(int64_t usec, int32_t cjie) noexcept {
-    double ucen = (usec - 9.46728e8) / 3.15576e9;
+    // hour angle contributed by the eccentricity
+    double hecc = (-1.25 * s2ma * oecc - 2.0 * s1ma) * oecc;
+    // obliquity of the ecliptic
     double eobl = (8.73e-9 * ucen + 3.49e-9) * ucen;
     eobl = (eobl + 2.26893e-4) * ucen + 4.09093e-1;
-    double tah1 = tan_in45d(eobl / 2.0);
-    double tah2 = tah1 * tah1, tah4 = tah2 * tah2;
-    int32_t oind = pymod<int32_t>(cjie, 12);
+    double tah1 = tan(eobl / 2.0), tah2 = tah1 * tah1;
+    int32_t ljie = pymod<int32_t>(cjie, 24);
     int64_t last = cjie_to_usec(cjie);
     int64_t next = cjie_to_usec(cjie + 1);
-    double lpha = HALF_PI / 3.0 * (usec - last) / (next - last);
-    double spha = HALF_PI / 3.0 * oind;
-    double s1ph = sin(spha), s2ph = sin(2.0 * spha);
-    double hobl = -1.0 * tah2 * s1ph + 0.5 * tah4 * s2ph;
-    return 86400.0 / TWO_PI * hobl;
-}
-
-constexpr double bias_eot(int64_t usec, int32_t cjie) noexcept {
-    double becc = bias_ecc(usec);
-    double bobl = bias_obl(usec, cjie);
-    return becc + bobl;
+    double past = double(usec - last) / (next - last);
+    // true longitude on the ecliptic
+    double tlon = PI / 12.0 * (past + ljie);
+    double s2tl = sin(2.0 * tlon), s4tl = sin(4.0 * tlon);
+    // hour angle contributed by the obliquity
+    double hobl = (0.5 * s4tl * tah2 - s2tl) * tah2;
+    return 86400.0 / TWO_PI * (hecc + hobl);
 }
 
 } // namespace _rst: real solar time
