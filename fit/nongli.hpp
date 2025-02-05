@@ -168,8 +168,8 @@ constexpr int64_t ss_pred(shihou shi) noexcept {
     return plin + pfit;
 }
 
-constexpr int64_t ss_ress(shihou shi) noexcept {
-    int32_t cjie = shihou_to_cjie(shi) - _data::CJIE_MIN;
+constexpr int64_t ss_ress(int32_t cjie) noexcept {
+    cjie -= _data::CJIE_MIN;
     cjie = clip<int32_t>(cjie, 0, _data::CJIE_NUM);
     constexpr int32_t SIZE = sizeof(_data::SS_RESS_0) / 3 * 2;
     quotrem<int32_t> sloc = cdivmod<int32_t>(cjie, SIZE);
@@ -184,7 +184,8 @@ constexpr int64_t ss_ress(shihou shi) noexcept {
 
 constexpr int64_t shihou_to_usec(shihou shi) noexcept {
     int64_t pred = _fit::ss_pred(shi);
-    int64_t ress = _fit::ss_ress(shi);
+    int32_t cjie = shihou_to_cjie(shi);
+    int64_t ress = _fit::ss_ress(cjie);
     return pred + ress;
 }
 
@@ -194,8 +195,10 @@ constexpr dati shihou_to_dati(shihou shi) noexcept {
 }
 
 constexpr int64_t cjie_to_usec(int32_t cjie) noexcept {
+    int64_t ress = _fit::ss_ress(cjie);
     shihou shi = cjie_to_shihou(cjie);
-    return shihou_to_usec(shi);
+    int64_t pred = _fit::ss_pred(shi);
+    return pred + ress;
 }
 
 constexpr dati cjie_to_dati(int32_t cjie) noexcept {
