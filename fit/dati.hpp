@@ -38,7 +38,7 @@ constexpr date uday_to_date(int32_t uday) noexcept {
     int16_t y = 1600;
     quotrem<int32_t> y41 = {0, 0};
     if (days >= 0) {
-        auto c41 = pydivmod<int32_t>(days, 146097);
+        auto c41 = cdivmod<int32_t>(days, 146097);
         if (c41.rem == 146096) {
             y += (c41.quot + 1) * 400;
             return date{y, 2, 29};
@@ -49,7 +49,7 @@ constexpr date uday_to_date(int32_t uday) noexcept {
         y41 = cdivmod<int32_t>(cy4.rem, 1461);
     } else {
         days -= 10 * (days < -6347);
-        y41 = cdivmod<int32_t>(days, 1461);
+        y41 = pydivmod<int32_t>(days, 1461);
     }
     if (y41.rem == 1460) {
         y += (y41.quot + 1) * 4;
@@ -92,7 +92,7 @@ constexpr dati usec_to_dati(int64_t usec, int8_t zone) noexcept {
     quotrem<int64_t> dh = pydivmod<int64_t>(lsec, 86400);
     date locd = uday_to_date(dh.quot);
     quotrem<int32_t> hm = cdivmod<int32_t>(dh.rem, 3600);
-    quotrem<int32_t> ms = cdivmod<int32_t>(ms.rem, 60);
+    quotrem<int32_t> ms = cdivmod<int32_t>(hm.rem, 60);
     int8_t hour = hm.quot, min = ms.quot, sec = ms.rem;
     return dati{locd.year, locd.mon, locd.day, hour, min, sec, zone};
 }
