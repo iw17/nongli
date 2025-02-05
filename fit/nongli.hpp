@@ -283,8 +283,7 @@ constexpr ganzhi bday_to_ganzhi(int32_t bday) noexcept {
     return ganzhi(dord);
 }
 
-constexpr ganzhi bshi_to_ganzhi(int64_t rsec) noexcept {
-    int64_t bshi = pydiv<int64_t>(rsec + 3600, 7200);
+constexpr ganzhi bshi_to_ganzhi(int64_t bshi) noexcept {
     int64_t sord = pymod<int64_t>(bshi + 24, 60);
     return ganzhi(sord);
 }
@@ -332,13 +331,14 @@ constexpr bazi usec_to_bazi(int64_t usec, double lon) noexcept {
     double bias_lon = _rst::bias_lon(lon);
     double bias_eot = _rst::bias_eot(usec, cjie);
     int64_t rsec = usec + bias_lon + bias_eot;
+    int64_t bshi = pydiv<int64_t>(rsec + 3600, 7200);
     int32_t bday = pydiv<int64_t>(rsec, 86400);
     int32_t byue = (cjie - 3) >> 1;
     int32_t bsui = 1970 + pydiv<int32_t>(byue, 12);
     ganzhi nzhu = nian_to_ganzhi(bsui);
     ganzhi yzhu = byue_to_ganzhi(byue);
     ganzhi rzhu = bday_to_ganzhi(bday);
-    ganzhi szhu = bshi_to_ganzhi(rsec);
+    ganzhi szhu = bshi_to_ganzhi(bshi);
     return bazi{nzhu, yzhu, rzhu, szhu};
 }
 
