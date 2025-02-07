@@ -48,43 +48,61 @@ constexpr bool operator!=(iw17::bazi a, iw17::bazi b) noexcept {
 
 int32_t test() noexcept {
     int32_t score = 0;
-    constexpr int32_t N = 3;
+    constexpr int32_t N = 4;
     constexpr int64_t usecs[N] = {
-        0, 1709136666, 1738617617,
+        0, 1079857804, 1709136666, 1738617617,
     };
     constexpr int32_t udays[N] = {
-        0, 19782, 20123,
+        0, 12498, 19782, 20123,
     };
     constexpr iw17::dati zonds[N] = {
         iw17::dati{1970,  1,  1,  8,  0,  0,  32},
+        iw17::dati{2004,  3, 21, 16, 30,  4,  32},
         iw17::dati{2024,  2, 29,  0, 11,  6,  32},
         iw17::dati{2025,  2,  4,  5, 20, 17,  32},
     };
     constexpr iw17::date locds[N] = {
         iw17::date{1970,  1,  1},
+        iw17::date{2004,  3, 21},
         iw17::date{2024,  2, 29},
         iw17::date{2025,  2,  4},
     };
     using enum iw17::ganzhi;
     constexpr iw17::bazi bazis[N] = {
         iw17::bazi{ji_you, bing_zi, xin_si, ren_chen},
+        iw17::bazi{jia_shen, ding_mao, ji_hai, ren_shen},
         iw17::bazi{jia_chen, bing_yin, ren_xu, ren_zi},
         iw17::bazi{yi_si, wu_yin, jia_chen, ding_mao},
     };
     constexpr iw17::riqi rizis[N] = {
         iw17::riqi{1969, 22, 24},
+        iw17::riqi{2004,  5,  1},
         iw17::riqi{2024,  2, 20},
         iw17::riqi{2025,  2,  7},
     };
     constexpr iw17::shihou shis[N] = {
         iw17::shihou{1970, iw17::jieqi::dongzhi},
+        iw17::shihou{2004, iw17::jieqi::chunfen},
         iw17::shihou{2024, iw17::jieqi::yushui},
         iw17::shihou{2025, iw17::jieqi::lichun},
     };
     constexpr iw17::dati datis[N] = {
         iw17::dati{1969, 12, 22,  8, 43, 41, 32},
+        iw17::dati{2004,  3, 20, 14, 48, 38, 32},
         iw17::dati{2024,  2, 19, 12, 13, 10, 32},
         iw17::dati{2025,  2,  3, 22, 10, 26, 32},
+    };
+    constexpr iw17::riqi nn01s[N] = {
+        iw17::riqi{1970, 22, 24},
+        iw17::riqi{2005,  4,  1},
+        iw17::riqi{2025,  2, 20},
+        iw17::riqi{2026,  2,  7},
+    };
+    constexpr iw17::riqi nn19s[N] = {
+        iw17::riqi{1988, 22, 24},
+        iw17::riqi{2023,  5,  1},
+        iw17::riqi{2043,  2, 20},
+        iw17::riqi{2044,  2,  7},
     };
     for (int32_t i = 0; i < N; i++) {
         int64_t us = usecs[i];
@@ -123,12 +141,22 @@ int32_t test() noexcept {
             return score;
         }
         score += 1;
+        iw17::riqi n01 = iw17::next_nian(rz, 1);
+        if (nn01s[i] != n01) {
+            return score;
+        }
+        score += 1;
+        iw17::riqi n19 = iw17::next_nian(rz, 19);
+        if (nn19s[i] != n19) {
+            return score;
+        }
+        score += 1;
     }
     return score;
 }
 
 int main() {
     int32_t score = test();
-    std::printf("%d scores out of 21\n", score);
+    std::printf("%d scores out of %d\n", score, 9 * 4);
     return 0;
 }
