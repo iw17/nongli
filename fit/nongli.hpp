@@ -20,6 +20,14 @@ struct riqi { // `nian`, `ryue`, `tian`
     int8_t ryue, tian;
 };
 
+constexpr int8_t ryue_to_nyue(int8_t ryue, int8_t run) noexcept {
+    return ryue / 2 - (2 * run >= ryue);
+}
+
+constexpr int8_t nyue_to_ryue(int8_t nyue, int8_t run) noexcept {
+    return (nyue + (nyue < run)) * 2 + (nyue == run);
+}
+
 constexpr int8_t nian_to_run(int16_t nian) noexcept {
     nian -= _data::NIAN_MIN;
     nian = clip<int16_t>(nian, 0, _data::NIAN_NUM);
@@ -99,7 +107,7 @@ constexpr riqi uday_to_riqi(int32_t uday) noexcept {
     int32_t cy01 = nian_to_cyue(nian);
     int8_t nyue = cyue - cy01;
     int8_t run = nian_to_run(nian);
-    int8_t ryue = (nyue + (nyue < run)) * 2 + (nyue == run);
+    int8_t ryue = nyue_to_ryue(nyue, run);
     int32_t ud01 = cyue_to_uday(cyue);
     int8_t tian = uday - ud01 + 1;
     return riqi{nian, ryue, tian};
@@ -114,7 +122,7 @@ constexpr int32_t riqi_to_uday(riqi rizi) noexcept {
     int16_t nian = rizi.nian;
     int8_t ryue = rizi.ryue, tian = rizi.tian;
     int8_t run = nian_to_run(nian);
-    int8_t nyue = ryue / 2 - (2 * run >= ryue);
+    int8_t nyue = ryue_to_nyue(ryue, run);
     int32_t cy01 = nian_to_cyue(nian);
     int32_t cyue = cy01 + nyue;
     int32_t ud01 = cyue_to_uday(cyue);
