@@ -134,6 +134,49 @@ constexpr date riqi_to_date(riqi rizi) noexcept {
     return uday_to_date(uday);
 }
 
+constexpr riqi next_nian(riqi rizi, int16_t step) noexcept {
+    int16_t nian = rizi.nian + step;
+    int8_t ryue = rizi.ryue, tian = rizi.tian;
+    int8_t run = nian_to_run(nian);
+    if (ryue & 1 && ryue >> 1 != run) {
+        ryue &= ~1;
+    }
+    if (tian >= 30) {
+        int8_t nyue = ryue_to_nyue(ryue, run);
+        int32_t cy01 = nian_to_cyue(nian);
+        int32_t cyue = cy01 + nyue;
+        int32_t ud01 = cyue_to_uday(cyue);
+        int32_t nd01 = cyue_to_uday(cyue + 1);
+        tian = nd01 - ud01;
+    }
+    return riqi{nian, ryue, tian};
+}
+
+constexpr riqi next_cyue(riqi rizi, int32_t step) noexcept {
+    int16_t nian = rizi.nian;
+    int8_t ryue = rizi.ryue, tian = rizi.tian;
+    int32_t cy01 = nian_to_cyue(nian);
+    int8_t run = nian_to_run(nian);
+    int8_t nyue = ryue_to_nyue(ryue, run);
+    int32_t cyue = cy01 + nyue + step;
+    nian = cyue_to_nian(cyue);
+    cy01 = nian_to_cyue(nian);
+    nyue = cyue - cy01;
+    run = nian_to_run(nian);
+    ryue = nyue_to_ryue(nyue, run);
+    if (tian >= 30) {
+        int32_t ud01 = cyue_to_uday(cyue);
+        int32_t nd01 = cyue_to_uday(cyue + 1);
+        tian = nd01 - ud01;
+    }
+    return riqi{nian, ryue, tian};
+}
+
+constexpr riqi next_tian(riqi rizi, int32_t step) noexcept {
+    int32_t uday = riqi_to_uday(rizi) + step;
+    return uday_to_riqi(uday);
+}
+
 enum class jieqi: int8_t {
     dongzhi,    xiaohan,    dahan,
     lichun,     yushui,     jingzhe,
