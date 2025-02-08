@@ -3,15 +3,6 @@
 
 #include <cstdint>
 
-#include "macros.hpp"
-
-#if IW_CPP_STD >= 202000L
-#include <concepts>
-#define IW_CONCEPT_INT std::integral
-#else
-#define IW_CONCEPT_INT class
-#endif // IW_CPP_STD >= 202000L
-
 namespace iw17 {
 
 template<class T>
@@ -25,7 +16,7 @@ constexpr T clip(T val, T min, T max) noexcept {
     return val;
 }
 
-template<IW_CONCEPT_INT T>
+template<class T>
 constexpr T pydiv(T num, T den) noexcept {
     T quot = num / den, rem = num % den;
     if (rem != 0 && (den < 0) != (rem < 0)) {
@@ -34,7 +25,7 @@ constexpr T pydiv(T num, T den) noexcept {
     return quot;
 }
 
-template<IW_CONCEPT_INT T>
+template<class T>
 constexpr T pymod(T num, T den) noexcept {
     T rem = num % den;
     if (rem != 0 && (den < 0) != (rem < 0)) {
@@ -43,19 +34,19 @@ constexpr T pymod(T num, T den) noexcept {
     return rem;
 }
 
-template<IW_CONCEPT_INT T>
+template<class T>
 struct quotrem { // quot, rem
     T quot;
     T rem;
 };
 
-template<IW_CONCEPT_INT T>
+template<class T>
 constexpr quotrem<T> cdivmod(T num, T den) noexcept {
     T quot = num / den, rem = num % den;
     return quotrem<T>{quot, rem};
 }
 
-template<IW_CONCEPT_INT T>
+template<class T>
 constexpr quotrem<T> pydivmod(T num, T den) noexcept {
     T quot = num / den, rem = num % den;
     if (rem != 0 && (den < 0) != (rem < 0)) {

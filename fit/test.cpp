@@ -67,12 +67,12 @@ int32_t test() noexcept {
         iw17::date{2024,  2, 29},
         iw17::date{2025,  2,  4},
     };
-    using enum iw17::ganzhi;
+    using gz = iw17::ganzhi; // not `using enum`, compatible with C++17
     constexpr iw17::bazi bazis[N] = {
-        iw17::bazi{ji_you, bing_zi, xin_si, ren_chen},
-        iw17::bazi{jia_shen, ding_mao, ji_hai, ren_shen},
-        iw17::bazi{jia_chen, bing_yin, ren_xu, ren_zi},
-        iw17::bazi{yi_si, wu_yin, jia_chen, ding_mao},
+        iw17::bazi{gz::ji_you, gz::bing_zi, gz::xin_si, gz::ren_chen},
+        iw17::bazi{gz::jia_shen, gz::ding_mao, gz::ji_hai, gz::ren_shen},
+        iw17::bazi{gz::jia_chen, gz::bing_yin, gz::ren_xu, gz::ren_zi},
+        iw17::bazi{gz::yi_si, gz::wu_yin, gz::jia_chen, gz::ding_mao},
     };
     constexpr iw17::riqi rizis[N] = {
         iw17::riqi{1969, 22, 24},
