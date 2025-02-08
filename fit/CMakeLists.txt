@@ -4,7 +4,7 @@ project(
     "Nongli"
     VERSION "2.1.0"
     DESCRIPTION "C++ library for Chinese calendar"
-    LANGUAGE CXX
+    LANGUAGES "CXX"
 )
 
 set(CMAKE_CXX_STANDARD "17")
