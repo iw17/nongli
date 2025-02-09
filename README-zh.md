@@ -9,6 +9,8 @@
 
 ### 环境配置
 
+执行如下命令配置环境：
+
 ```bash
 cd data/
 conda env create -f environment.yml
@@ -17,22 +19,22 @@ conda activate Nongli
 
 ### 爬取原始数据
 
-通过 Selenium 访问“[超级万年历](https://www.sxwnl.com/super/)“，在线计算朔和节气的时刻，并导出到 `data/build/raw.txt`。
+执行如下命令获取原始数据并导出到 `data/build/raw.txt`：
 
 ```bash
 cd data/
-python3 -u spider.py
+python -u spider.py
 ```
 
 脚本中的 `MIN` 和 `MAX` 可以按需修改。由于“超级万年历”拟合算法的精度有限，-4712 A.D.（4713 B.C.）以前和 9999 A.D. 以后的计算很可能不准确。
 
 ### 重排年份、月份
 
-历史上月份序号发生过多次变动，但为方便起见，均用现在的历法排列当时的年份、月份，并导出到 `data/build/` 目录下。
+历史上月份序号发生过多次变动，但为方便起见，均用现在的历法排列当时的年份、月份。执行如下命令将重排后的朔与节气信息导出到 `data/build/` 目录下：
 
 ```bash
 cd data/
-python3 -u split.py
+python -u split.py
 ```
 
 笔记本代码中的 `MIN` 和 `MAX` 可以按需修改，但不能超过原始数据的范围。特别提醒：本仓库不适用于计算和研究**历史上**三国及以前**实际**采用的历法。
@@ -46,6 +48,8 @@ python3 -u split.py
 除了排八字计算真太阳时校正以外，其余拟合均采用整数加、减、乘法和位运算，尽量避免浮点运算，以加快计算速度。从 C++20 开始，语言标准规定有符号整数右移为算术右移。事实上，绝大多数编译器一直以来都这样实现右移，因此假设用户的编译器在按照 C++17 标准编译时也是如此。
 
 ### 运行测试样例
+
+执行如下命令运行测试样例：
 
 ```bash
 mkdir fit/build/

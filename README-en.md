@@ -25,17 +25,17 @@ conda activate Nongli
 To fetch raw data and export them to `data/build/raw.txt`, use the following commands:
 
 ```bash
-python3 -u data/spider.py
+python -u data/spider.py
 ```
 
 The constants MIN and MAX in the script are modifiable. Note that data before -4172 A.D. (4713 B.C.) and after 9999 A.D. may be inaccurate due to the limited precision of the fitting algorithms in SXWNL.
 
-### Rearranging Data
+### Rearranging `Nian`s & `Yue`s
 
-The ordinals of `yue`s have changed several times throughout history. For convenience, previous data are rearranged according to the present `nongli` and exported into `data/build/`.
+The ordinals of `yue`s have changed several times throughout history. For convenience, previous data are rearranged according to the present `nongli`. To export rearranged info on `shuo`s and `jieqi`s into `data/build/`, use the following command:
 
 ```bash
-python3 -u data/split.py
+python -u data/split.py
 ```
 
 The constants `MIN` and `MAX` in the notebook code are modifiable without exceeding the original data range. Note that this repository is NOT applicable for **historical** calendars **actually** used in and before 240s A.D.
