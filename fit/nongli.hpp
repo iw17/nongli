@@ -371,19 +371,17 @@ constexpr ganzhi bshi_to_ganzhi(int64_t bshi) noexcept {
     return ganzhi(sord);
 }
 
-constexpr int32_t uday_toufu(int16_t sui) noexcept {
-    constexpr int8_t TG_GENG = int8_t(tiangan::geng);
-    int32_t udxz = shihou_to_usec({sui, jieqi::xiazhi});
+constexpr int32_t sui_to_toufu(int16_t sui) noexcept {
+    int32_t udxz = usec_to_uday(shihou_to_usec({sui, jieqi::xiazhi}));
     tiangan tgxz = ganzhi_to_tiangan(bday_to_ganzhi(udxz));
-    int8_t dtxz = pymod<int8_t>(int8_t(tgxz) - TG_GENG, 10);
+    int8_t dtxz = pymod<int8_t>(int8_t(tiangan::geng) - int8_t(tgxz), 10);
     return udxz + dtxz + 20;
 }
 
-constexpr int32_t uday_sanfu(int16_t sui) noexcept {
-    constexpr int8_t TG_GENG = int8_t(tiangan::geng);
-    int32_t udlq = shihou_to_usec({sui, jieqi::liqiu});
+constexpr int32_t sui_to_sanfu(int16_t sui) noexcept {
+    int32_t udlq = usec_to_uday(shihou_to_usec({sui, jieqi::liqiu}));
     tiangan tglq = ganzhi_to_tiangan(bday_to_ganzhi(udlq));
-    int8_t dtlq = pymod<int8_t>(int8_t(tglq) - TG_GENG, 10);
+    int8_t dtlq = pymod<int8_t>(int8_t(tiangan::geng) - int8_t(tglq), 10);
     return udlq + dtlq;
 }
 
