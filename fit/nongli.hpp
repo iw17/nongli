@@ -135,6 +135,9 @@ constexpr date riqi_to_date(riqi rizi) noexcept {
 }
 
 constexpr riqi next_nian(riqi rizi, int16_t step) noexcept {
+    if (step == 0) {
+        return rizi;
+    }
     int16_t nian = rizi.nian + step;
     int8_t ryue = rizi.ryue, tian = rizi.tian;
     int8_t run = nian_to_run(nian);
@@ -153,6 +156,9 @@ constexpr riqi next_nian(riqi rizi, int16_t step) noexcept {
 }
 
 constexpr riqi next_cyue(riqi rizi, int32_t step) noexcept {
+    if (step == 0) {
+        return rizi;
+    }
     int16_t nian = rizi.nian;
     int8_t ryue = rizi.ryue, tian = rizi.tian;
     int32_t cy01 = nian_to_cyue(nian);
@@ -173,6 +179,9 @@ constexpr riqi next_cyue(riqi rizi, int32_t step) noexcept {
 }
 
 constexpr riqi next_tian(riqi rizi, int32_t step) noexcept {
+    if (step == 0) {
+        return rizi;
+    }
     int32_t uday = riqi_to_uday(rizi) + step;
     return uday_to_riqi(uday);
 }
