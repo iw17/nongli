@@ -16,7 +16,8 @@
 To set up the environment, use the following commands:
 
 ```bash
-conda env create -f data/environment.yml
+cd data/
+conda env create -f environment.yml
 conda activate Nongli
 ```
 
@@ -25,17 +26,19 @@ conda activate Nongli
 To fetch raw data and export them to `data/build/raw.txt`, use the following commands:
 
 ```bash
-python -u data/spider.py
+cd data/
+python -u spider.py
 ```
 
 The constants MIN and MAX in the script are modifiable. Note that data before -4172 A.D. (4713 B.C.) and after 9999 A.D. may be inaccurate due to the limited precision of the fitting algorithms in SXWNL.
 
-### Rearranging `Nian`s & `Yue`s
+### Rearranging Data
 
 The ordinals of `yue`s have changed several times throughout history. For convenience, previous data are rearranged according to the present `nongli`. To export rearranged info on `shuo`s and `jieqi`s into `data/build/`, use the following command:
 
 ```bash
-python -u data/split.py
+cd data/
+python -u split.py
 ```
 
 The constants `MIN` and `MAX` in the notebook code are modifiable without exceeding the original data range. Note that this repository is NOT applicable for **historical** calendars **actually** used in and before 240s A.D.
@@ -71,10 +74,8 @@ Here a `runyue` starts with an `r`, while a common non-`runyue` starts with a `p
 
 In this repository, `shengri` occurs when both `yue` and `tian` match the birth `riqi`. If born on 30th `tian`, then the `shengri` occurs on 29th in the `nian`s whose corresponding `yue` has only 29 `tian`s. If born in a `runyue`, the `shengri` occurs in the common non-`runyue` in the `nian`s that lack a corresponding `runyue`, or in the `runyue` in the `nian`s that do have one.
 
-> One born in 1987-p01-01 celebrates the `shengri` on p01-01 every `nian`.
-
-> One born in 2004-p02-30 celebrates the `shengri` of 2024 `nian` on p02-29.
-
+> One born in 1987-p01-01 celebrates the `shengri` on p01-01 every `nian`.\
+> One born in 2004-p02-30 celebrates the `shengri` of 2024 `nian` on p02-29.\
 > One born in 2004-r02-16 celebrates the `shengri` of 2022 `nian` on p02-16, and of 2023 `nian` on r02-16.
 
 ### `Jieqi`: a.k.a. Solar Terms
