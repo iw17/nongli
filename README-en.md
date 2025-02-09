@@ -139,4 +139,4 @@ Each `shi zhu` follows an odd hour (`zi_chu` 23, `chou_chu` 1, ... `hai_chu` 21)
 ## Acknowledgements
 
 * Thanks to Mr. Xu Jianwei for having developed the website [SXWNL](https://www.sxwnl.com/super/).
-* Thanks to Ms. Zhao Yuhan for providing details of when to celebrate birthdays on `nongli runyue`s.
+* Thanks to Ms. Zhao Yuhan for providing insights of when to celebrate `shengri` on `nongli runyue`s.
