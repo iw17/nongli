@@ -313,6 +313,16 @@ constexpr zodiac dati_to_zodiac(dati zond) noexcept {
     return usec_to_zodiac(usec);
 }
 
+enum class tiangan: int8_t {
+    jia,    yi,     bing,   ding,   wu,
+    ji,     geng,   xin,    ren,    gui,
+};
+
+enum class dizhi: int8_t {
+    zi,     chou,   yin,    mao,    chen,   si,
+    wu,     wei,    shen,   you,    xu,     hai,
+};
+
 enum class ganzhi: int8_t { // 10 `tiangan`s, 12 `dizhi`s
     jia_zi,     yi_chou,    bing_yin,   ding_mao,   wu_chen,
     ji_si,      geng_wu,    xin_wei,    ren_shen,   gui_you,
@@ -327,6 +337,19 @@ enum class ganzhi: int8_t { // 10 `tiangan`s, 12 `dizhi`s
     jia_yin,    yi_mao,     bing_chen,  ding_si,    wu_wu,
     ji_wei,     geng_shen,  xin_you,    ren_xu,     gui_hai,
 };
+
+constexpr tiangan ganzhi_to_tiangan(ganzhi zhu) noexcept {
+    return tiangan(int8_t(zhu) % 10);
+}
+
+constexpr dizhi ganzhi_to_dizhi(ganzhi zhu) noexcept {
+    return dizhi(int8_t(zhu) % 12);
+}
+
+constexpr ganzhi make_ganzhi(tiangan gan, dizhi zhi) noexcept {
+    int8_t zord = 6 * int8_t(gan) - 5 * int8_t(zhi);
+    return ganzhi(pymod<int8_t>(zord, 60));
+}
 
 constexpr ganzhi nian_to_ganzhi(int16_t nian) noexcept {
     int16_t nord = pymod<int16_t>(nian - 4, 60);
@@ -346,6 +369,22 @@ constexpr ganzhi bday_to_ganzhi(int32_t bday) noexcept {
 constexpr ganzhi bshi_to_ganzhi(int64_t bshi) noexcept {
     int64_t sord = pymod<int64_t>(bshi + 24, 60);
     return ganzhi(sord);
+}
+
+constexpr int32_t uday_toufu(int16_t sui) noexcept {
+    constexpr int8_t TG_GENG = int8_t(tiangan::geng);
+    int32_t udxz = shihou_to_usec({sui, jieqi::xiazhi});
+    tiangan tgxz = ganzhi_to_tiangan(bday_to_ganzhi(udxz));
+    int8_t dtxz = pymod<int8_t>(int8_t(tgxz) - TG_GENG, 10);
+    return udxz + dtxz + 20;
+}
+
+constexpr int32_t uday_sanfu(int16_t sui) noexcept {
+    constexpr int8_t TG_GENG = int8_t(tiangan::geng);
+    int32_t udlq = shihou_to_usec({sui, jieqi::liqiu});
+    tiangan tglq = ganzhi_to_tiangan(bday_to_ganzhi(udlq));
+    int8_t dtlq = pymod<int8_t>(int8_t(tglq) - TG_GENG, 10);
+    return udlq + dtlq;
 }
 
 struct bazi { // 4 `zhu`s: `nian`, `yue`, `ri`, `shi`
