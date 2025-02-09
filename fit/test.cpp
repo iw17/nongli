@@ -104,6 +104,12 @@ int32_t test() noexcept {
         iw17::riqi{2043,  2, 20},
         iw17::riqi{2044,  2,  7},
     };
+    constexpr int32_t toufus[N] = {
+        199, 12619, 19919, 20289,
+    };
+    constexpr int32_t sanfus[N] = {
+        219, 12639, 19949, 20309,
+    };
     for (int32_t i = 0; i < N; i++) {
         int64_t us = usecs[i];
         int32_t ud = iw17::usec_to_uday(us);
@@ -151,12 +157,22 @@ int32_t test() noexcept {
             return score;
         }
         score += 1;
+        int32_t toufu = iw17::sui_to_toufu(sh.sui);
+        if (toufus[i] != toufu) {
+            return score;
+        }
+        score += 1;
+        int32_t sanfu = iw17::sui_to_sanfu(sh.sui);
+        if (sanfus[i] != sanfu) {
+            return score;
+        }
+        score += 1;
     }
     return score;
 }
 
 int main() {
     int32_t score = test();
-    std::printf("%d scores out of %d\n", score, 9 * 4);
+    std::printf("%d scores out of %d\n", score, 11 * 4);
     return 0;
 }
