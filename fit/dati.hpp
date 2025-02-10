@@ -81,8 +81,8 @@ constexpr date dati_to_date(dati zond) noexcept {
 }
 
 constexpr int64_t dati_to_usec(dati zond) noexcept {
-    date te = dati_to_date(zond);
-    int32_t uday = date_to_uday(te);
+    date locd = dati_to_date(zond);
+    int32_t uday = date_to_uday(locd);
     int32_t dsec = int32_t(3600) * zond.hour + 60 * zond.min + zond.sec;
     return int64_t(86400) * uday + dsec - int64_t(900) * zond.zone;
 }
