@@ -30,7 +30,7 @@ cd data/
 python -u spider.py
 ```
 
-The constants MIN and MAX in the script are modifiable. Note that data before -4172 A.D. (4713 B.C.) and after 9999 A.D. may be inaccurate due to the limited precision of the fitting algorithms in SXWNL.
+The constants MIN and MAX in the script are modifiable. Note that data before -4712 A.D. (4713 B.C.) and after 9999 A.D. may be inaccurate due to the limited precision of the fitting algorithms in SXWNL.
 
 ### Rearranging Data
 
@@ -64,7 +64,7 @@ cmake .. && make
 
 ### `Riqi`: Date in `Nongli`
 
-In this repository, `nian` starts from one `chunjie` (p01-01) until next. The value of `ryue` being 2, 3, ... 24, 25 refers to p01, r01, ... p12, r12 respectively. In Chinese, p11 and p12 are also called `dongyue` and `layue` respectively.
+In this repository, `nian` starts from one `chunjie` (p01-01) until next. The value of `ryue` being 2, 3, ... 24, 25 refers to p01, r01, ... p12, r12, respectively. In Chinese, p11 and p12 are also called `dongyue` and `layue`, respectively.
 
 > 1970 `nian` corresponds to the interval from Unix timestamp 3081600 sec until 33753600 sec.
 
@@ -86,15 +86,15 @@ In this repository, `sui` starts from one `dongzhi` (a.k.a. winter solstice) unt
 
 ### Zodiac Sign
 
-Zodiac signs do **NOT** belong to `nongli`, but are determined from the apparent longitude of the Sun on the ecliptic. Thus, they correspond to `jieqi`s in `nongli`. The ordinal of zodiac sign being 0, 1, ... 11 refers to Aries, Taurus, ... Pisces respectively. Starting with Aries (`chunfen`, a.k.a. vernal equinox), each zodiac sign follows a `zhongqi` (`chunfen`, `guyu`, ... `yushui`).
+Zodiac signs do **NOT** belong to `nongli`, but are determined from the apparent longitude of the Sun on the ecliptic. Thus, they correspond to `jieqi`s in `nongli`. The ordinal of zodiac sign being 0, 1, ... 11 refers to Aries, Taurus, ... Pisces, respectively. Starting with Aries (`chunfen`, a.k.a. vernal equinox), each zodiac sign follows a `zhongqi` (`chunfen`, `guyu`, ... `yushui`).
 
 ### `Ganzhi`
 
-`Ganzhi` is a combination of `tiangan` (`jia`, `yi`, ... `gui`) and `dizhi` (`zi`, `chou`, ... `hai`), occurring in pairs for 60-periodic counting. The ordinal of `ganzhi` being 0, 1, ... 59 refers to `jia_zi`, `yi_chou`, ... `gui_hai` respectively.
+`Ganzhi` is a combination of `tiangan` (`jia`, `yi`, ... `gui`) and `dizhi` (`zi`, `chou`, ... `hai`), occurring in pairs for 60-periodic counting. The ordinal of `ganzhi` being 0, 1, ... 59 refers to `jia_zi`, `yi_chou`, ... `gui_hai`, respectively.
 
 ### `Futian`
 
-Counting from `xiazhi` day, `toufu` (or `chufu`) starts from the 3rd `geng` day, while `erfu` (or `zhongfu`) starts from the 4th `geng` day. Counting from `liqiu` day, `sanfu` (or `mofu`) starts from the 1st `geng` day. The durations of `toufu`, `erfu` and `sanfu` are 10 days, 10 or 20 days, and 10 days respectively, totaling either 30 or 40 days.
+Counting from `xiazhi` day, `toufu` (or `chufu`) starts from the 3rd `geng` day, while `erfu` (or `zhongfu`) starts from the 4th `geng` day. Counting from `liqiu` day, `sanfu` (or `mofu`) starts from the 1st `geng` day. The durations of `toufu`, `erfu` and `sanfu` are 10 days, 10 or 20 days and 10 days, respectively, totaling either 30 or 40 days.
 
 ### `Shujiu`
 
