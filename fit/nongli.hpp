@@ -47,9 +47,8 @@ constexpr int32_t ny_pred(int16_t nian) noexcept {
 constexpr int32_t ny_resy(int16_t nian) noexcept {
     nian -= _data::NIAN_MIN;
     nian = clip<int16_t>(nian, 0, _data::NIAN_NUM);
-    quotrem<int32_t> iloc = cdivmod<int32_t>(nian, 8);
-    uint8_t byte = _data::NY_RESY[iloc.quot];
-    return (byte >> iloc.rem) & 1;
+    auto [isub, ibit] = cdivmod<int32_t>(nian, 8);
+    return (_data::NY_RESY[isub] >> ibit) & 1;
 }
 
 } // namespace _fit
@@ -72,11 +71,10 @@ constexpr int32_t yd_resd(int32_t cyue) noexcept {
     cyue -= _data::CYUE_MIN;
     cyue = clip<int32_t>(cyue, 0, _data::CYUE_NUM);
     constexpr int32_t SIZE = 4 * sizeof(_data::YD_RESD_0);
-    quotrem<int32_t> yloc = cdivmod<int32_t>(cyue, SIZE);
-    const uint8_t *arrd = _data::YD_ARRD[yloc.quot];
-    quotrem<int32_t> iloc = cdivmod<int32_t>(yloc.rem, 4);
-    uint8_t byte = arrd[iloc.quot];
-    return (byte >> 2 * iloc.rem) & 0b0011;
+    auto [iarr, iloc] = cdivmod<int32_t>(cyue, SIZE);
+    const uint8_t *arrd = _data::YD_ARRD[iloc];
+    auto [isub, ibit] = cdivmod<int32_t>(iloc, 4);
+    return (arrd[isub] >> 2 * ibit) & 0b0011;
 }
 
 } // namespace _fit
@@ -207,8 +205,8 @@ constexpr int32_t shihou_to_cjie(shihou shi) noexcept {
 }
 
 constexpr shihou cjie_to_shihou(int32_t cjie) noexcept {
-    quotrem<int32_t> shi = pydivmod<int32_t>(cjie, 24);
-    return shihou{int16_t(shi.quot + 1970), jieqi(shi.rem)};
+    auto [sui, jie] = pydivmod<int32_t>(cjie, 24);
+    return shihou{int16_t(sui + 1970), jieqi(jie)};
 }
 
 namespace _fit { // SS: shihou_to_usec
@@ -232,12 +230,12 @@ constexpr int64_t ss_ress(int32_t cjie) noexcept {
     cjie -= _data::CJIE_MIN;
     cjie = clip<int32_t>(cjie, 0, _data::CJIE_NUM);
     constexpr int32_t SIZE = sizeof(_data::SS_RESS_0) / 3 * 2;
-    quotrem<int32_t> sloc = cdivmod<int32_t>(cjie, SIZE);
-    const uint8_t *arrs = _data::SS_ARRS[sloc.quot];
-    int32_t isub = sloc.rem * 3 / 2;
+    auto [iarr, iloc] = cdivmod<int32_t>(cjie, SIZE);
+    const uint8_t *arrs = _data::SS_ARRS[iarr];
+    int32_t isub = iloc * 3 / 2;
     //// 0x12, 0x34, 0x56 -> 0x412, 0x563
     uint32_t pair = (arrs[isub + 1] << 8) | arrs[isub];
-    return (sloc.rem & 1) ? (pair >> 4) : (pair & 0x0fff);
+    return (iloc & 1) ? (pair >> 4) : (pair & 0x0fff);
 }
 
 } // namespace _fit

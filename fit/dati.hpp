@@ -12,22 +12,21 @@ struct date {
 };
 
 constexpr int32_t date_to_uday(date locd) noexcept {
-    int16_t y = locd.year;
-    int8_t m = locd.mon, d = locd.day;
+    auto [y, m, d] = locd;
     if ((m -= 3) < 0) {
         y -= 1, m += 12;
     }
     int32_t days = (153 * m + 2) / 5 + d - 1;
     if (y >= 1600) {
-        auto c41 = pydivmod<int32_t>(y, 400);
-        days += (c41.quot - 4) * 146097;
-        auto cy4 = cdivmod<int32_t>(c41.rem, 100);
-        days += cy4.quot * 36524;
-        auto y41 = cdivmod<int32_t>(cy4.rem, 4);
-        days += y41.quot * 1461 + y41.rem * 365;
+        auto [c41q, c41r] = pydivmod<int32_t>(y, 400);
+        days += (c41q - 4) * 146097;
+        auto [cy4q, cy4r] = cdivmod<int32_t>(c41r, 100);
+        days += cy4q * 36524;
+        auto [y41q, y41r] = cdivmod<int32_t>(cy4r, 4);
+        days += y41q * 1461 + y41r * 365;
     } else {
-        auto y41 = cdivmod<int32_t>(y - 1600, 4);
-        days += y41.quot * 1461 + y41.rem * 365;
+        auto [y41q, y41r] = cdivmod<int32_t>(y - 1600, 4);
+        days += y41q * 1461 + y41r * 365;
         days += 10 * (days < -6347);
     }
     return days - 135080;
@@ -38,28 +37,29 @@ constexpr date uday_to_date(int32_t uday) noexcept {
     int16_t y = 1600;
     quotrem<int32_t> y41 = {0, 0};
     if (days >= 0) {
-        auto c41 = cdivmod<int32_t>(days, 146097);
-        if (c41.rem == 146096) {
-            y += (c41.quot + 1) * 400;
+        auto [c41q, c41r] = cdivmod<int32_t>(days, 146097);
+        if (c41r == 146096) {
+            y += (c41q + 1) * 400;
             return date{y, 2, 29};
         }
-        y += c41.quot * 400;
-        auto cy4 = cdivmod<int32_t>(c41.rem, 36524);
-        y += cy4.quot * 100;
-        y41 = cdivmod<int32_t>(cy4.rem, 1461);
+        y += c41q * 400;
+        auto [cy4q, cy4r] = cdivmod<int32_t>(c41r, 36524);
+        y += cy4q * 100;
+        y41 = cdivmod<int32_t>(cy4r, 1461);
     } else {
         days -= 10 * (days < -6347);
         y41 = pydivmod<int32_t>(days, 1461);
     }
-    if (y41.rem == 1460) {
-        y += (y41.quot + 1) * 4;
+    auto [y41q, y41r] = y41;
+    if (y41r == 1460) {
+        y += (y41q + 1) * 4;
         return date{y, 2, 29};
     }
-    y += y41.quot * 4;
-    auto ym5 = cdivmod<int32_t>(y41.rem, 365);
-    y += ym5.quot;
-    int8_t m = (5 * ym5.rem + 2) / 153;
-    int8_t d = 1 + ym5.rem - (153 * m + 2) / 5;
+    y += y41q * 4;
+    auto [ym5q, ym5r] = cdivmod<int32_t>(y41r, 365);
+    y += ym5q;
+    int8_t m = (5 * ym5r + 2) / 153;
+    int8_t d = 1 + ym5r - (153 * m + 2) / 5;
     if ((m += 3) > 12) {
         m -= 12, y += 1;
     }
@@ -81,20 +81,20 @@ constexpr date dati_to_date(dati zond) noexcept {
 }
 
 constexpr int64_t dati_to_usec(dati zond) noexcept {
-    date locd = dati_to_date(zond);
-    int32_t uday = date_to_uday(locd);
-    int32_t dsec = int32_t(3600) * zond.hour + 60 * zond.min + zond.sec;
-    return int64_t(86400) * uday + dsec - int64_t(900) * zond.zone;
+    auto [y, m, d, hh, mm, ss, zz] = zond;
+    int32_t uday = date_to_uday(date{y, m, d});
+    int32_t dsec = int32_t(3600) * hh + 60 * mm + ss;
+    int32_t zsec = int32_t(900) * zz;
+    return int64_t(86400) * uday + dsec - zsec;
 }
 
 constexpr dati usec_to_dati(int64_t usec, int8_t zone) noexcept {
     int64_t lsec = usec + int64_t(900) * zone;
-    quotrem<int64_t> dh = pydivmod<int64_t>(lsec, 86400);
-    date locd = uday_to_date(dh.quot);
-    quotrem<int32_t> hm = cdivmod<int32_t>(dh.rem, 3600);
-    quotrem<int32_t> ms = cdivmod<int32_t>(hm.rem, 60);
-    int8_t hour = hm.quot, min = ms.quot, sec = ms.rem;
-    return dati{locd.year, locd.mon, locd.day, hour, min, sec, zone};
+    auto [uday, dsec] = pydivmod<int64_t>(lsec, 86400);
+    auto [y, m, d] = uday_to_date(uday);
+    auto [hh, hm] = cdivmod<int32_t>(dsec, 3600);
+    auto [mm, ss] = cdivmod<int32_t>(hm, 60);
+    return dati{y, m, d, int8_t(hh), int8_t(mm), int8_t(ss), zone};
 }
 
 constexpr dati zone_cast(dati zond, int8_t zone) noexcept {
