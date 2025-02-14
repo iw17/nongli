@@ -1,6 +1,8 @@
 #ifndef IW_NONGLI_HPP
 #define IW_NONGLI_HPP 20250203L
 
+#include <cstdio>
+
 #include "data.hpp"
 #include "dati.hpp"
 #include "math.hpp"
@@ -12,12 +14,13 @@ constexpr int64_t uday_to_usec(int32_t uday) noexcept {
 }
 
 constexpr int32_t usec_to_uday(int64_t usec) noexcept {
-    return pydiv<int64_t>(usec + 28800, 86400);
+    return math::pydiv<int64_t>(usec + 28800, 86400);
 }
 
 struct riqi { // `nian`, `ryue`, `tian`
     int16_t nian;
-    int8_t ryue, tian;
+    int8_t ryue;
+    int8_t tian;
 };
 
 constexpr int8_t ryue_to_nyue(int8_t ryue, int8_t run) noexcept {
@@ -30,7 +33,7 @@ constexpr int8_t nyue_to_ryue(int8_t nyue, int8_t run) noexcept {
 
 constexpr int8_t nian_to_run(int16_t nian) noexcept {
     nian -= _data::NIAN_MIN;
-    nian = clip<int16_t>(nian, 0, _data::NIAN_NUM);
+    nian = math::clip<int16_t>(nian, 0, _data::NIAN_NUM);
     uint8_t byte = _data::NR_RUNS[nian / 2];
     int8_t run = (byte >> 4 * (nian % 2)) & 0b1111;
     return run;
@@ -46,8 +49,8 @@ constexpr int32_t ny_pred(int16_t nian) noexcept {
 
 constexpr int32_t ny_resy(int16_t nian) noexcept {
     nian -= _data::NIAN_MIN;
-    nian = clip<int16_t>(nian, 0, _data::NIAN_NUM);
-    auto [isub, ibit] = cdivmod<int32_t>(nian, 8);
+    nian = math::clip<int16_t>(nian, 0, _data::NIAN_NUM);
+    auto [isub, ibit] = math::cdivmod<int32_t>(nian, 8);
     return (_data::NY_RESY[isub] >> ibit) & 1;
 }
 
@@ -69,11 +72,11 @@ constexpr int32_t yd_pred(int32_t cyue) noexcept {
 
 constexpr int32_t yd_resd(int32_t cyue) noexcept {
     cyue -= _data::CYUE_MIN;
-    cyue = clip<int32_t>(cyue, 0, _data::CYUE_NUM);
+    cyue = math::clip<int32_t>(cyue, 0, _data::CYUE_NUM);
     constexpr int32_t SIZE = 4 * sizeof(_data::YD_RESD_0);
-    auto [iarr, iloc] = cdivmod<int32_t>(cyue, SIZE);
+    auto [iarr, iloc] = math::cdivmod<int32_t>(cyue, SIZE);
     const uint8_t *arrd = _data::YD_ARRD[iloc];
-    auto [isub, ibit] = cdivmod<int32_t>(iloc, 4);
+    auto [isub, ibit] = math::cdivmod<int32_t>(iloc, 4);
     return (arrd[isub] >> 2 * ibit) & 0b0011;
 }
 
@@ -205,7 +208,7 @@ constexpr int32_t shihou_to_cjie(shihou shi) noexcept {
 }
 
 constexpr shihou cjie_to_shihou(int32_t cjie) noexcept {
-    auto [sui, jie] = pydivmod<int32_t>(cjie, 24);
+    auto [sui, jie] = math::pydivmod<int32_t>(cjie, 24);
     return shihou{int16_t(sui + 1970), jieqi(jie)};
 }
 
@@ -228,9 +231,9 @@ constexpr int64_t ss_pred(shihou shi) noexcept {
 
 constexpr int64_t ss_ress(int32_t cjie) noexcept {
     cjie -= _data::CJIE_MIN;
-    cjie = clip<int32_t>(cjie, 0, _data::CJIE_NUM);
+    cjie = math::clip<int32_t>(cjie, 0, _data::CJIE_NUM);
     constexpr int32_t SIZE = sizeof(_data::SS_RESS_0) / 3 * 2;
-    auto [iarr, iloc] = cdivmod<int32_t>(cjie, SIZE);
+    auto [iarr, iloc] = math::cdivmod<int32_t>(cjie, SIZE);
     const uint8_t *arrs = _data::SS_ARRS[iarr];
     int32_t isub = iloc * 3 / 2;
     //// 0x12, 0x34, 0x56 -> 0x412, 0x563
@@ -296,7 +299,7 @@ enum class zodiac: int8_t { // NOT part of `nongli`
 };
 
 constexpr zodiac jieqi_to_zodiac(jieqi jie) noexcept {
-    int8_t ijie = clip<int8_t>(int8_t(jie), 0, 23);
+    int8_t ijie = math::clip<int8_t>(int8_t(jie), 0, 23);
     int8_t izod = (ijie - 6 + 24 * (ijie < 6)) / 2;
     return zodiac(izod);
 }
@@ -346,40 +349,44 @@ constexpr dizhi ganzhi_to_dizhi(ganzhi zhu) noexcept {
 
 constexpr ganzhi make_ganzhi(tiangan gan, dizhi zhi) noexcept {
     int8_t zord = 6 * int8_t(gan) - 5 * int8_t(zhi);
-    return ganzhi(pymod<int8_t>(zord, 60));
+    return ganzhi(zord + 60 * (zord < 0));
 }
 
 constexpr ganzhi nian_to_ganzhi(int16_t nian) noexcept {
-    int16_t nord = pymod<int16_t>(nian - 4, 60);
+    int16_t nord = math::pymod<int16_t>(nian - 4, 60);
     return ganzhi(nord);
 }
 
 constexpr ganzhi byue_to_ganzhi(int32_t byue) noexcept {
-    int32_t yord = pymod<int32_t>(byue + 14, 60);
+    int32_t yord = math::pymod<int32_t>(byue + 14, 60);
     return ganzhi(yord);
 }
 
 constexpr ganzhi bday_to_ganzhi(int32_t bday) noexcept {
-    int32_t dord = pymod<int32_t>(bday + 17, 60);
+    int32_t dord = math::pymod<int32_t>(bday + 17, 60);
     return ganzhi(dord);
 }
 
 constexpr ganzhi bshi_to_ganzhi(int64_t bshi) noexcept {
-    int64_t sord = pymod<int64_t>(bshi + 24, 60);
+    int64_t sord = math::pymod<int64_t>(bshi + 24, 60);
     return ganzhi(sord);
 }
 
 constexpr int32_t sui_to_toufu(int16_t sui) noexcept {
-    int32_t udxz = usec_to_uday(shihou_to_usec({sui, jieqi::xiazhi}));
+    int64_t usxz = shihou_to_usec({sui, jieqi::xiazhi});
+    int32_t udxz = usec_to_uday(usxz);
     tiangan tgxz = ganzhi_to_tiangan(bday_to_ganzhi(udxz));
-    int8_t dtxz = pymod<int8_t>(int8_t(tiangan::geng) - int8_t(tgxz), 10);
+    int8_t diff = int8_t(tiangan::geng) - int8_t(tgxz);
+    int8_t dtxz = math::pymod<int8_t>(diff, 10);
     return udxz + dtxz + 20;
 }
 
 constexpr int32_t sui_to_sanfu(int16_t sui) noexcept {
-    int32_t udlq = usec_to_uday(shihou_to_usec({sui, jieqi::liqiu}));
+    int64_t uslq = shihou_to_usec({sui, jieqi::liqiu});
+    int32_t udlq = usec_to_uday(uslq);
     tiangan tglq = ganzhi_to_tiangan(bday_to_ganzhi(udlq));
-    int8_t dtlq = pymod<int8_t>(int8_t(tiangan::geng) - int8_t(tglq), 10);
+    int8_t diff = int8_t(tiangan::geng) - int8_t(tglq);
+    int8_t dtlq = math::pymod<int8_t>(diff, 10);
     return udlq + dtlq;
 }
 
@@ -393,30 +400,25 @@ constexpr double bias_lon(double lon = 120.0) noexcept {
     return 240.0 * lon;
 }
 
-constexpr double bias_eot(int64_t usec, int32_t cjie) noexcept {
-    // centuries (36525 days) since J2000
+constexpr int64_t bias_eot(int64_t usec, int32_t cjie) noexcept {
     double ucen = (usec - 9.46728e8) / 3.15576e9;
-    // eccentricity of the Earth's orbit
-    double oecc = (-4.193e-5 + ucen * -1.26e-7) * ucen + 1.67086e-2;
-    // mean anomaly
-    double mano = 1.990968753e-7 * usec + 2.46231e-2;
-    double s1ma = sin(mano), s2ma = sin(2.0 * mano);
-    // hour angle contributed by the eccentricity
-    double hecc = (-1.25 * s2ma * oecc - 2.0 * s1ma) * oecc;
-    // obliquity of the ecliptic
-    double eobl = (8.73e-9 * ucen + 3.49e-9) * ucen;
-    eobl = (eobl + 2.26893e-4) * ucen + 4.09093e-1;
-    double tah1 = tan(eobl / 2.0), tah2 = tah1 * tah1;
-    int32_t ljie = pymod<int32_t>(cjie, 24);
+    double oecc = 1.67086e-2 + ucen * -1.26e-7;
+    double mano = 3.918888e-3 + usec * 3.168725186e-8;
+    double s1ma = math::csin(mano);
+    double s2ma = math::csin(2.0 * mano);
+    double hecc = oecc * (-2.0 * s1ma + oecc * -1.25 * s2ma);
+    double eobl = 6.51092e-2 + ucen * 3.61e-5;
+    double tah2 = 2.0 / (1.0 + math::ccos_in45d(eobl)) - 1.0;
+    int32_t ljie = math::pymod<int32_t>(cjie, 24);
     int64_t last = cjie_to_usec(cjie);
     int64_t next = cjie_to_usec(cjie + 1);
     double past = double(usec - last) / (next - last);
-    // true longitude on the ecliptic
-    double tlon = PI / 12.0 * (past + ljie);
-    double s2tl = sin(2.0 * tlon), s4tl = sin(4.0 * tlon);
-    // hour angle contributed by the obliquity
-    double hobl = (0.5 * s4tl * tah2 - s2tl) * tah2;
-    return 86400.0 / TWO_PI * (hecc + hobl);
+    double tlon = (past + ljie) / 24.0;
+    double s2tl = math::csin(2.0 * tlon);
+    double s4tl = math::csin(4.0 * tlon);
+    double hobl = tah2 * (-s2tl + tah2 * 0.5 * s4tl);
+    double bsec = 13750.98708313975701043 * (hecc + hobl);
+    return int64_t(bsec + (bsec < 0.0 ? -0.5 : 0.5));
 }
 
 } // namespace _rst: real solar time
@@ -426,10 +428,10 @@ constexpr bazi usec_to_bazi(int64_t usec, double lon) noexcept {
     double bias_lon = _rst::bias_lon(lon);
     double bias_eot = _rst::bias_eot(usec, cjie);
     int64_t rsec = usec + bias_lon + bias_eot;
-    int64_t bshi = pydiv<int64_t>(rsec + 3600, 7200);
-    int32_t bday = pydiv<int64_t>(rsec, 86400);
+    int64_t bshi = math::pydiv<int64_t>(rsec + 3600, 7200);
+    int32_t bday = math::pydiv<int64_t>(rsec, 86400);
     int32_t byue = (cjie - 3) >> 1;
-    int32_t bsui = 1970 + pydiv<int32_t>(byue, 12);
+    int32_t bsui = 1970 + math::pydiv<int32_t>(byue, 12);
     ganzhi nzhu = nian_to_ganzhi(bsui);
     ganzhi yzhu = byue_to_ganzhi(byue);
     ganzhi rzhu = bday_to_ganzhi(bday);
