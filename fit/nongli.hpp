@@ -400,7 +400,7 @@ constexpr double bias_lon(double lon = 120.0) noexcept {
     return 240.0 * lon;
 }
 
-constexpr int64_t bias_eot(int64_t usec, int32_t cjie) noexcept {
+constexpr double bias_eot(int64_t usec, int32_t cjie) noexcept {
     double ucen = (usec - 9.46728e8) / 3.15576e9;
     double oecc = 1.67086e-2 + ucen * -1.26e-7;
     double mano = 3.918888e-3 + usec * 3.168725186e-8;
@@ -417,8 +417,7 @@ constexpr int64_t bias_eot(int64_t usec, int32_t cjie) noexcept {
     double s2tl = math::csin(2.0 * tlon);
     double s4tl = math::csin(4.0 * tlon);
     double hobl = tah2 * (-s2tl + tah2 * 0.5 * s4tl);
-    double bsec = 13750.98708313975701043 * (hecc + hobl);
-    return int64_t(bsec + (bsec < 0.0 ? -0.5 : 0.5));
+    return 13750.98708313975701043 * (hecc + hobl);
 }
 
 } // namespace _rst: real solar time
@@ -427,7 +426,8 @@ constexpr bazi usec_to_bazi(int64_t usec, double lon) noexcept {
     int32_t cjie = usec_to_cjie(usec);
     double bias_lon = _rst::bias_lon(lon);
     double bias_eot = _rst::bias_eot(usec, cjie);
-    int64_t rsec = usec + bias_lon + bias_eot;
+    double brst = bias_lon + bias_eot;
+    int64_t rsec = usec + brst + (brst < 0.0 ? -0.5 : 0.5);
     int64_t bshi = math::pydiv<int64_t>(rsec + 3600, 7200);
     int32_t bday = math::pydiv<int64_t>(rsec, 86400);
     int32_t byue = (cjie - 3) >> 1;
