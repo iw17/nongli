@@ -427,7 +427,7 @@ constexpr bazi usec_to_bazi(int64_t usec, double lon) noexcept {
     double bias_lon = _rst::bias_lon(lon);
     double bias_eot = _rst::bias_eot(usec, cjie);
     double brst = bias_lon + bias_eot;
-    int64_t rsec = usec + brst + (brst < 0.0 ? -0.5 : 0.5);
+    int64_t rsec = usec + int64_t(brst + (brst < 0.0 ? -0.5 : 0.5));
     int64_t bshi = math::pydiv<int64_t>(rsec + 3600, 7200);
     int32_t bday = math::pydiv<int64_t>(rsec, 86400);
     int32_t byue = (cjie - 3) >> 1;
