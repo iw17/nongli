@@ -396,7 +396,7 @@ struct bazi { // 4 `zhu`s: `nian`, `yue`, `ri`, `shi`
 
 namespace _rst { // real solar time: longitude bias and EoT
 
-constexpr double bias_lon(double lon = 120.0) noexcept {
+constexpr double bias_lon(double lon) noexcept {
     return 240.0 * lon;
 }
 
