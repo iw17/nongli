@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION "3.10")
 
-project(
-    "Nongli"
-    VERSION "2.1.0"
-    DESCRIPTION "C++ library for Chinese calendar"
-    LANGUAGES "CXX"
-)
+project("Test Examples for Nongli")
 
 set(CMAKE_CXX_STANDARD "17")
 set(CMAKE_CXX_STANDARD_REQUIRED True)
