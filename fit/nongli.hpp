@@ -75,7 +75,7 @@ constexpr int32_t yd_resd(int32_t cyue) noexcept {
     cyue = math::clip<int32_t>(cyue, 0, _data::CYUE_NUM);
     constexpr int32_t SIZE = 4 * sizeof(_data::YD_RESD_0);
     auto [iarr, iloc] = math::cdivmod<int32_t>(cyue, SIZE);
-    const uint8_t *arrd = _data::YD_ARRD[iloc];
+    const uint8_t *arrd = _data::YD_ARRD[iarr];
     auto [isub, ibit] = math::cdivmod<int32_t>(iloc, 4);
     return (arrd[isub] >> 2 * ibit) & 0b0011;
 }
