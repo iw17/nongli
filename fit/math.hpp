@@ -2,8 +2,15 @@
 #define IW_MATH_HPP 20250205L
 
 #include <cstdint>
+#include <type_traits>
 
 namespace iw17::math {
+
+template<class T>
+constexpr T round(double val) noexcept {
+    static_assert(std::is_integral_v<T>);
+    return val + (val < 0.0 ? -0.5 : 0.5);
+}
 
 template<class T>
 constexpr T clip(T val, T min, T max) noexcept {
@@ -18,6 +25,7 @@ constexpr T clip(T val, T min, T max) noexcept {
 
 template<class T>
 constexpr T pydiv(T num, T den) noexcept {
+    static_assert(std::is_integral_v<T>);
     T quot = num / den, rem = num % den;
     if (rem != 0 && (den < 0) != (rem < 0)) {
         return quot - 1;
@@ -27,6 +35,7 @@ constexpr T pydiv(T num, T den) noexcept {
 
 template<class T>
 constexpr T pymod(T num, T den) noexcept {
+    static_assert(std::is_integral_v<T>);
     T rem = num % den;
     if (rem != 0 && (den < 0) != (rem < 0)) {
         return rem + den;
@@ -36,8 +45,8 @@ constexpr T pymod(T num, T den) noexcept {
 
 template<class T>
 struct quotrem { // quot, rem
-    T quot;
-    T rem;
+    static_assert(std::is_integral_v<T>);
+    T quot, rem;
 };
 
 template<class T>
