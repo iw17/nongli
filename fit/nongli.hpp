@@ -120,8 +120,7 @@ constexpr riqi date_to_riqi(date locd) noexcept {
 }
 
 constexpr int32_t riqi_to_uday(riqi rizi) noexcept {
-    int16_t nian = rizi.nian;
-    int8_t ryue = rizi.ryue, tian = rizi.tian;
+    auto [nian, ryue, tian] = rizi;
     int8_t run = nian_to_run(nian);
     int8_t nyue = ryue_to_nyue(ryue, run);
     int32_t cy01 = nian_to_cyue(nian);
@@ -139,8 +138,8 @@ constexpr riqi next_nian(riqi rizi, int16_t step) noexcept {
     if (step == 0) {
         return rizi;
     }
-    int16_t nian = rizi.nian + step;
-    int8_t ryue = rizi.ryue, tian = rizi.tian;
+    auto [nian, ryue, tian] = rizi;
+    nian += step;
     int8_t run = nian_to_run(nian);
     if (ryue & 1 && ryue >> 1 != run) {
         ryue &= ~1;
@@ -204,7 +203,8 @@ struct shihou { // `sui`, `jie`
 };
 
 constexpr int32_t shihou_to_cjie(shihou shi) noexcept {
-    return 24 * int32_t(shi.sui - 1970) + int32_t(shi.jie);
+    auto [sui, jie] = shi;
+    return 24 * int32_t(sui - 1970) + int32_t(jie);
 }
 
 constexpr shihou cjie_to_shihou(int32_t cjie) noexcept {
@@ -427,7 +427,7 @@ constexpr bazi usec_to_bazi(int64_t usec, double lon) noexcept {
     double bias_lon = _rst::bias_lon(lon);
     double bias_eot = _rst::bias_eot(usec, cjie);
     double brst = bias_lon + bias_eot;
-    int64_t rsec = usec + int64_t(brst + (brst < 0.0 ? -0.5 : 0.5));
+    int64_t rsec = usec + math::round<int64_t>(brst);
     int64_t bshi = math::pydiv<int64_t>(rsec + 3600, 7200);
     int32_t bday = math::pydiv<int64_t>(rsec, 86400);
     int32_t byue = (cjie - 3) >> 1;
