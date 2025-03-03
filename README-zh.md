@@ -49,13 +49,24 @@ python -u split.py
 
 ### 运行测试样例
 
-执行如下命令运行测试样例：
+若使用 GCC 或 Clang 编译器和 Make 构建工具，执行如下命令：
 
 ```bash
-mkdir fit/build/
-cd fit/build/
-cmake .. && make
-./test.out
+cd fit/
+mkdir build/ && cd build/
+cmake ..
+make
+./test # or './test.exe' if on Windows
+```
+
+若使用 MSVC 编译器和 NMAKE 构建工具，则执行如下命令：
+
+```bash
+cd fit/
+mkdir build/ && cd build/
+cmake ..
+cmake --build . --config Release # or 'Debug' if you prefer
+./Release/test.exe # or 'Debug' as above
 ```
 
 ### 日期

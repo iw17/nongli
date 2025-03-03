@@ -53,13 +53,24 @@ All the fittings, except for equation of time (EoT) bias in the calculation of `
 
 ### Running Test Examples
 
-To run test examples, use the following commands:
+To run test examples, use the following commands if using GCC or Clang and Make:
 
 ```bash
-mkdir fit/build/
-cd fit/build/
-cmake .. && make
-./test.out
+cd fit/
+mkdir build/ && cd build/
+cmake ..
+make
+./test # or './test.exe' if on Windows
+```
+
+Or use the following commands if using MSVC and NMAKE:
+
+```bash
+cd fit/
+mkdir build/ && cd build/
+cmake ..
+cmake --build . --config Release # or 'Debug' if you prefer
+./Release/test.exe # or 'Debug' as above
 ```
 
 ### `Riqi`: Date in `Nongli`
