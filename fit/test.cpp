@@ -1,9 +1,9 @@
-#include <cstdio>
+#include <iostream>
 
 #include "nongli.hpp"
 
 constexpr bool operator==(iw17::date a, iw17::date b) noexcept {
-    return a.year == b.year && a.mon == b.mon && a.day && b.day;
+    return a.year == b.year && a.mon == b.mon && a.day == b.day;
 }
 
 constexpr bool operator!=(iw17::date a, iw17::date b) noexcept {
@@ -173,6 +173,6 @@ int32_t test() noexcept {
 
 int main() {
     int32_t score = test();
-    std::printf("%d scores out of %d\n", score, 11 * 4);
+    std::cout << score << " scores of " << 11 * 4 << '\n';
     return 0;
 }
