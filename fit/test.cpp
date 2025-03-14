@@ -56,10 +56,10 @@ int32_t test() noexcept {
         0, 12498, 19782, 20123,
     };
     constexpr iw17::dati zonds[N] = {
-        iw17::dati{1970,  1,  1,  8,  0,  0,  32},
-        iw17::dati{2004,  3, 21, 16, 30,  4,  32},
-        iw17::dati{2024,  2, 29,  0, 11,  6,  32},
-        iw17::dati{2025,  2,  4,  5, 20, 17,  32},
+        iw17::dati{1970,  1,  1,  8,  0,  0, iw17::tzinfo::east_0800},
+        iw17::dati{2004,  3, 21, 16, 30,  4, iw17::tzinfo::east_0800},
+        iw17::dati{2024,  2, 29,  0, 11,  6, iw17::tzinfo::east_0800},
+        iw17::dati{2025,  2,  4,  5, 20, 17, iw17::tzinfo::east_0800},
     };
     constexpr iw17::date locds[N] = {
         iw17::date{1970,  1,  1},
@@ -87,10 +87,10 @@ int32_t test() noexcept {
         iw17::shihou{2025, iw17::jieqi::lichun},
     };
     constexpr iw17::dati datis[N] = {
-        iw17::dati{1969, 12, 22,  8, 43, 41, 32},
-        iw17::dati{2004,  3, 20, 14, 48, 38, 32},
-        iw17::dati{2024,  2, 19, 12, 13, 10, 32},
-        iw17::dati{2025,  2,  3, 22, 10, 26, 32},
+        iw17::dati{1969, 12, 22,  8, 43, 41, iw17::tzinfo::east_0800},
+        iw17::dati{2004,  3, 20, 14, 48, 38, iw17::tzinfo::east_0800},
+        iw17::dati{2024,  2, 19, 12, 13, 10, iw17::tzinfo::east_0800},
+        iw17::dati{2025,  2,  3, 22, 10, 26, iw17::tzinfo::east_0800},
     };
     constexpr iw17::riqi nn01s[N] = {
         iw17::riqi{1970, 22, 24},
@@ -117,7 +117,7 @@ int32_t test() noexcept {
             return score;
         }
         score += 1;
-        iw17::dati zd = iw17::usec_to_dati(us, 32);
+        iw17::dati zd = iw17::usec_to_dati(us, iw17::tzinfo::east_0800);
         if (zonds[i] != zd) {
             return score;
         }
