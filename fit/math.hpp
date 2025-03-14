@@ -2,17 +2,15 @@
 #define IW_MATH_HPP 20250205L
 
 #include <cstdint>
-#include <type_traits>
 
 namespace iw17::math {
 
-template<class T>
-constexpr T round(double val) noexcept {
-    static_assert(std::is_integral_v<T>);
+template <class Int>
+constexpr Int round(double val) noexcept {
     return val + (val < 0.0 ? -0.5 : 0.5);
 }
 
-template<class T>
+template <class T>
 constexpr T clip(T val, T min, T max) noexcept {
     if (val <= min) {
         return min;
@@ -23,45 +21,42 @@ constexpr T clip(T val, T min, T max) noexcept {
     return val;
 }
 
-template<class T>
-constexpr T pydiv(T num, T den) noexcept {
-    static_assert(std::is_integral_v<T>);
-    T quot = num / den, rem = num % den;
+template <class Int>
+constexpr Int pydiv(Int num, Int den) noexcept {
+    Int quot = num / den, rem = num % den;
     if (rem != 0 && (den < 0) != (rem < 0)) {
         return quot - 1;
     }
     return quot;
 }
 
-template<class T>
-constexpr T pymod(T num, T den) noexcept {
-    static_assert(std::is_integral_v<T>);
-    T rem = num % den;
+template <class Int>
+constexpr Int pymod(Int num, Int den) noexcept {
+    Int rem = num % den;
     if (rem != 0 && (den < 0) != (rem < 0)) {
         return rem + den;
     }
     return rem;
 }
 
-template<class T>
+template <class Int>
 struct quotrem { // quot, rem
-    static_assert(std::is_integral_v<T>);
-    T quot, rem;
+    Int quot, rem;
 };
 
-template<class T>
-constexpr quotrem<T> cdivmod(T num, T den) noexcept {
-    T quot = num / den, rem = num % den;
-    return quotrem<T>{quot, rem};
+template <class Int>
+constexpr quotrem<Int> cdivmod(Int num, Int den) noexcept {
+    Int quot = num / den, rem = num % den;
+    return quotrem<Int>{quot, rem};
 }
 
-template<class T>
-constexpr quotrem<T> pydivmod(T num, T den) noexcept {
-    T quot = num / den, rem = num % den;
+template <class Int>
+constexpr quotrem<Int> pydivmod(Int num, Int den) noexcept {
+    Int quot = num / den, rem = num % den;
     if (rem != 0 && (den < 0) != (rem < 0)) {
-        return quotrem<T>{quot - 1, rem + den};
+        return quotrem<Int>{quot - 1, rem + den};
     }
-    return quotrem<T>{quot, rem};
+    return quotrem<Int>{quot, rem};
 }
 
 // ccos(x) = cos(2 PI x)
