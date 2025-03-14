@@ -33,10 +33,9 @@ constexpr int8_t nyue_to_ryue(int8_t nyue, int8_t run) noexcept {
 
 constexpr int8_t nian_to_run(int16_t nian) noexcept {
     nian -= _data::NIAN_MIN;
-    nian = math::clip<int16_t>(nian, 0, _data::NIAN_NUM);
-    uint8_t byte = _data::NR_RUNS[nian / 2];
-    int8_t run = (byte >> 4 * (nian % 2)) & 0b1111;
-    return run;
+    auto [iloc, ibit] = math::cdivmod<uint8_t>(nian, 2);
+    iloc = math::clip<int16_t>(iloc, 0, _data::NR_NUM - 1);
+    return (_data::NR_RUNS[iloc] >> (4 * ibit)) & 0b1111;
 }
 
 namespace _fit { // NY: nian_to_cyue
@@ -49,9 +48,9 @@ constexpr int32_t ny_pred(int16_t nian) noexcept {
 
 constexpr int32_t ny_resy(int16_t nian) noexcept {
     nian -= _data::NIAN_MIN;
-    nian = math::clip<int16_t>(nian, 0, _data::NIAN_NUM);
-    auto [isub, ibit] = math::cdivmod<int32_t>(nian, 8);
-    return (_data::NY_RESY[isub] >> ibit) & 1;
+    auto [iloc, ibit] = math::cdivmod<uint32_t>(nian, 8);
+    iloc = math::clip<int16_t>(iloc, 0, _data::NY_NUM - 1);
+    return (_data::NY_RESY[iloc] >> ibit) & 1;
 }
 
 } // namespace _fit
@@ -72,12 +71,12 @@ constexpr int32_t yd_pred(int32_t cyue) noexcept {
 
 constexpr int32_t yd_resd(int32_t cyue) noexcept {
     cyue -= _data::CYUE_MIN;
-    cyue = math::clip<int32_t>(cyue, 0, _data::CYUE_NUM);
-    constexpr int32_t SIZE = 4 * sizeof(_data::YD_RESD_0);
-    auto [iarr, iloc] = math::cdivmod<int32_t>(cyue, SIZE);
+    auto [isub, ibit] = math::cdivmod<uint32_t>(cyue, 4);
+    isub = math::clip<int32_t>(isub, 0, _data::YD_NUM);
+    constexpr int32_t SIZE = sizeof(_data::YD_RESD_0);
+    auto [iarr, iloc] = math::cdivmod<int32_t>(isub, SIZE);
     const uint8_t *arrd = _data::YD_ARRD[iarr];
-    auto [isub, ibit] = math::cdivmod<int32_t>(iloc, 4);
-    return (arrd[isub] >> 2 * ibit) & 0b0011;
+    return (arrd[isub] >> (2 * ibit)) & 0b0011;
 }
 
 } // namespace _fit
@@ -99,7 +98,7 @@ constexpr int16_t cyue_to_nian(int32_t cyue) noexcept {
     int32_t bfit = _data::YN_COEF[1] * cyue + _data::YN_COEF[2];
     int32_t pred = _data::YN_COEF[0] + (bfit >> _data::YN_BITS);
     int32_t pyue = nian_to_cyue(pred);
-    return pred - int32_t(cyue < pyue);
+    return pred - (cyue < pyue);
 }
 
 constexpr riqi uday_to_riqi(int32_t uday) noexcept {
@@ -159,8 +158,7 @@ constexpr riqi next_cyue(riqi rizi, int32_t step) noexcept {
     if (step == 0) {
         return rizi;
     }
-    int16_t nian = rizi.nian;
-    int8_t ryue = rizi.ryue, tian = rizi.tian;
+    auto [nian, ryue, tian] = rizi;
     int32_t cy01 = nian_to_cyue(nian);
     int8_t run = nian_to_run(nian);
     int8_t nyue = ryue_to_nyue(ryue, run);
@@ -212,59 +210,58 @@ constexpr shihou cjie_to_shihou(int32_t cjie) noexcept {
     return shihou{int16_t(sui + 1970), jieqi(jie)};
 }
 
-namespace _fit { // SS: shihou_to_usec
+namespace _fit { // JS: cjie_to_usec
 
-constexpr int64_t ss_pred(shihou shi) noexcept {
-    int64_t sui = shi.sui;
-    int64_t plin = _data::SS_CLIN[0] * sui + _data::SS_CLIN[1];
-    const auto &coef = _data::SS_COEF[int8_t(shi.jie)];
+constexpr int64_t js_pred(shihou shi) noexcept {
+    auto [sui, jie] = shi;
+    int64_t plin = _data::JS_CLIN[0] * sui + _data::JS_CLIN[1];
+    const auto &coef = _data::JS_COEF[int8_t(jie)];
     int64_t pfit = coef[0];
-    // about 1/3 faster than for-cycle
-    pfit = (pfit * sui >> _data::SS_BITS) + coef[1];
-    pfit = (pfit * sui >> _data::SS_BITS) + coef[2];
-    pfit = (pfit * sui >> _data::SS_BITS) + coef[3];
-    pfit = (pfit * sui >> _data::SS_BITS) + coef[4];
-    pfit = (pfit * sui >> _data::SS_BITS) + coef[5];
-    pfit = (pfit * sui >> _data::SS_BITS) + coef[6];
+    // about 1/3 faster than for-loop
+    pfit = (pfit * sui >> _data::JS_BITS) + coef[1];
+    pfit = (pfit * sui >> _data::JS_BITS) + coef[2];
+    pfit = (pfit * sui >> _data::JS_BITS) + coef[3];
+    pfit = (pfit * sui >> _data::JS_BITS) + coef[4];
+    pfit = (pfit * sui >> _data::JS_BITS) + coef[5];
+    pfit = (pfit * sui >> _data::JS_BITS) + coef[6];
     return plin + pfit;
 }
 
-constexpr int64_t ss_ress(int32_t cjie) noexcept {
-    cjie -= _data::CJIE_MIN;
-    cjie = math::clip<int32_t>(cjie, 0, _data::CJIE_NUM);
-    constexpr int32_t SIZE = sizeof(_data::SS_RESS_0) / 3 * 2;
-    auto [iarr, iloc] = math::cdivmod<int32_t>(cjie, SIZE);
-    const uint8_t *arrs = _data::SS_ARRS[iarr];
-    int32_t isub = iloc * 3 / 2;
+constexpr int64_t js_ress(int32_t cjie) noexcept {
+    int32_t isub = (cjie - _data::CJIE_MIN) * 3 / 2;
+    isub = math::clip<int32_t>(isub, 0, _data::JS_NUM - 1);
+    constexpr int32_t SIZE = sizeof(_data::JS_RESS_0);
+    auto [iarr, iloc] = math::cdivmod<int32_t>(isub, SIZE);
+    const uint8_t *arrs = _data::JS_ARRS[iarr];
     //// 0x12, 0x34, 0x56 -> 0x412, 0x563
-    uint32_t pair = (arrs[isub + 1] << 8) | arrs[isub];
-    return (iloc & 1) ? (pair >> 4) : (pair & 0x0fff);
+    uint32_t pair = (arrs[iloc + 1] << 8) | arrs[iloc];
+    return (cjie & 1) ? (pair >> 4) : (pair & 0x0fff);
 }
 
 } // namespace _fit
 
 constexpr int64_t shihou_to_usec(shihou shi) noexcept {
-    int64_t pred = _fit::ss_pred(shi);
+    int64_t pred = _fit::js_pred(shi);
     int32_t cjie = shihou_to_cjie(shi);
-    int64_t ress = _fit::ss_ress(cjie);
+    int64_t ress = _fit::js_ress(cjie);
     return pred + ress;
 }
 
 constexpr dati shihou_to_dati(shihou shi) noexcept {
     int64_t usec = shihou_to_usec(shi);
-    return usec_to_dati(usec, 32);
+    return usec_to_dati(usec, tzinfo::east_0800);
 }
 
 constexpr int64_t cjie_to_usec(int32_t cjie) noexcept {
-    int64_t ress = _fit::ss_ress(cjie);
+    int64_t ress = _fit::js_ress(cjie);
     shihou shi = cjie_to_shihou(cjie);
-    int64_t pred = _fit::ss_pred(shi);
+    int64_t pred = _fit::js_pred(shi);
     return pred + ress;
 }
 
 constexpr dati cjie_to_dati(int32_t cjie) noexcept {
     int64_t usec = cjie_to_usec(cjie);
-    return usec_to_dati(usec, 32);
+    return usec_to_dati(usec, tzinfo::east_0800);
 }
 
 constexpr int32_t usec_to_cjie(int64_t usec) noexcept {
