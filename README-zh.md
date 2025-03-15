@@ -7,6 +7,8 @@
 
 ## 数据
 
+若导出到 `fit/data.hpp` 中 1900 至 2199 年的数据已经足够，则本节可以跳过。
+
 ### 环境配置
 
 执行如下命令配置环境：
@@ -65,8 +67,8 @@ make
 cd fit/
 mkdir build/ && cd build/
 cmake ..
-cmake --build . --config Release # or 'Debug' if you prefer
-./Release/test.exe # or 'Debug' as above
+cmake --build . --config Release
+./Release/test.exe
 ```
 
 ### 日期

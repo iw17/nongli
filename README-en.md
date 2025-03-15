@@ -11,6 +11,8 @@
 
 ## Data
 
+You can skip this section if satisfied with the data exported from 1900 to 2199 in `fit/data.hpp`.
+
 ### Environment Setup
 
 To set up the environment, use the following commands:
@@ -69,8 +71,8 @@ Or use the following commands if using MSVC and NMAKE:
 cd fit/
 mkdir build/ && cd build/
 cmake ..
-cmake --build . --config Release # or 'Debug' if you prefer
-./Release/test.exe # or 'Debug' as above
+cmake --build . --config Release
+./Release/test.exe
 ```
 
 ### `Riqi`: Date in `Nongli`
@@ -105,7 +107,7 @@ Zodiac signs do **NOT** belong to `nongli`, but are determined from the apparent
 
 ### `Futian`
 
-Counting from `xiazhi` day, `toufu` (or `chufu`) starts from the 3rd `geng` day, while `erfu` (or `zhongfu`) starts from the 4th `geng` day. Counting from `liqiu` day, `sanfu` (or `mofu`) starts from the 1st `geng` day. The durations of `toufu`, `erfu` and `sanfu` are 10 days, 10 or 20 days and 10 days, respectively, totaling either 30 or 40 days.
+Counting from `xiazhi` day, `toufu` (or `chufu`) starts from the 3rd `geng` day, while `erfu` (or `zhongfu`) starts from the 4th `geng` day. Counting from `liqiu` day, `sanfu` (or `mofu`) starts from the 1st `geng` day. The durations of `toufu`, `erfu` and `sanfu` are 10 days, 10 or 20 days, and 10 days, respectively, totaling either 30 or 40 days.
 
 ### `Shujiu`
 
@@ -116,6 +118,8 @@ Counting from `dongzhi` day, each `jiu` consists of 9 consecutive days. A `sui` 
 ### `Bazi`
 
 `Shengchen bazi` is determined from one's birth date and time, and consists of 4 `zhu`s, with 2 `zi`s (for `gan` and `zhi`) in each `zhu`. Traditionally, time was measured using sundials that display real solar time (RST). The time shown on the clock (mean solar time, MST) is converted to local time based on the birthplace's longitude, and then the Equation of Time (EoT) is added to obtain RST.
+
+> In Chinese, `ba` means 8.
 
 #### `Nian Zhu`
 
