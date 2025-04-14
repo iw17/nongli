@@ -1,11 +1,10 @@
 #ifndef IW_NONGLI_HPP
 #define IW_NONGLI_HPP 20250203L
 
-#include <cstdio>
+#include <cstdint>
 
 #include "data.hpp"
 #include "dati.hpp"
-#include "math.hpp"
 
 namespace iw17 {
 
@@ -393,38 +392,80 @@ struct bazi { // 4 `zhu`s: `nian`, `yue`, `ri`, `shi`
 
 namespace _rst { // real solar time: longitude bias and EoT
 
-constexpr double bias_lon(double lon) noexcept {
-    return 240.0 * lon;
+constexpr math::fix64_t bias_lon(math::fix64_t lon) noexcept {
+    return 240 * lon;
 }
 
-constexpr double bias_eot(int64_t usec, int32_t cjie) noexcept {
-    double ucen = (usec - 9.46728e8) / 3.15576e9;
-    double oecc = 1.67086e-2 + ucen * -1.26e-7;
-    double mano = 3.918888e-3 + usec * 3.168725186e-8;
-    double s1ma = math::csin(mano);
-    double s2ma = math::csin(2.0 * mano);
-    double hecc = oecc * (-2.0 * s1ma + oecc * -1.25 * s2ma);
-    double eobl = 6.51092e-2 + ucen * 3.61e-5;
-    double tah2 = 2.0 / (1.0 + math::ccos_in45d(eobl)) - 1.0;
-    int32_t ljie = math::pymod<int32_t>(cjie, 24);
+constexpr math::fix64_t bias_lon(double lon) noexcept {
+    return math::make_fix64(240.0 * lon);
+}
+
+constexpr math::fix64_t bias_eot(int64_t usec, int32_t cjie) noexcept {
+    using namespace math::literal;
+    constexpr int64_t EPOCH_J2K = 946728000;
+    constexpr int64_t SECS_CENTURY = 3155760000;
+    // centuries (36525 days) since J2000.0 epoch
+    int64_t jsec = usec - EPOCH_J2K;
+    math::fix64_t ucen = math::fair_div(jsec, SECS_CENTURY);
+    // mean anomaly
+    constexpr int64_t SECS_TWO_YEARS = 63116865;
+    constexpr int64_t USEC_PERI = 946876650;
+    int64_t psec = 8 * (usec - USEC_PERI);
+    math::fix64_t mano = math::fair_div(psec, SECS_TWO_YEARS);
+    // eccentricity of the Earth's orbit
+    constexpr math::fix64_t ECCO_COEFS[] = {
+        math::make_fix64(+1.67086e-2),
+        math::make_fix64(-4.19300e-5),
+        math::make_fix64(-1.26000e-7),
+    };
+    math::fix64_t ecco = ECCO_COEFS[2];
+    ecco = math::fast_mul(ecco, ucen) + ECCO_COEFS[1];
+    ecco = math::fast_mul(ecco, ucen) + ECCO_COEFS[0];
+    // hour angle bias from eccentricity
+    math::fix64_t s1ma = math::sinq(mano);
+    math::fix64_t s2ma = math::sinq(2 * mano);
+    math::fix64_t hecc = -5 * math::fast_mul(ecco, s2ma);
+    hecc = math::fast_mul(ecco, (hecc >> 2) - 2 * s1ma);
+    // obliquity of the ecliptic
+    constexpr math::fix64_t OBLE_COEFS[] = {
+        math::make_fix64(+2.60437e-1),
+        math::make_fix64(-1.44444e-4),
+        math::make_fix64(-2.22222e-9),
+        math::make_fix64(+5.55556e-9),
+    };
+    math::fix64_t oble = OBLE_COEFS[3];
+    oble = math::fast_mul(oble, ucen) + OBLE_COEFS[2];
+    oble = math::fast_mul(oble, ucen) + OBLE_COEFS[1];
+    oble = math::fast_mul(oble, ucen) + OBLE_COEFS[0];
+    // true longitude of the Sun on the ecliptic
+    constexpr int32_t ORD_CF = int32_t(jieqi::chunfen);
+    int32_t ljie = math::pymod<int32_t>(cjie - ORD_CF, 24);
     int64_t last = cjie_to_usec(cjie);
     int64_t next = cjie_to_usec(cjie + 1);
-    double past = double(usec - last) / (next - last);
-    double tlon = (past + ljie) / 24.0;
-    double s2tl = math::csin(2.0 * tlon);
-    double s4tl = math::csin(4.0 * tlon);
-    double hobl = tah2 * (-s2tl + tah2 * 0.5 * s4tl);
-    return 13750.98708313975701043 * (hecc + hobl);
+    int64_t past = usec - last, jdur = next - last;
+    int64_t pscf = ljie * jdur + past; // since `chunfen`
+    math::fix64_t qlon = math::fast_div(2 * pscf, 3 * jdur);
+    // hour angle bias from obliquity
+    math::fix64_t veso = 1_fix - math::cosq(oble);
+    math::fix64_t s4tl = math::sinq(qlon);
+    math::fix64_t s2tl = math::sinq(qlon >> 1);
+    math::fix64_t hobl = (s2tl - (s4tl >> 1)) >> 1;
+    hobl = math::fast_mul(hobl, veso) + (s2tl >> 1);
+    hobl = math::fast_mul(hobl, veso);
+    // time bias from hour angles
+    constexpr double HAT_DBL = 13750.987083139757010431557;
+    constexpr math::fix64_t HAT_FIX = math::make_fix64(HAT_DBL);
+    return math::fair_mul(HAT_FIX, hecc + hobl);
 }
 
 } // namespace _rst: real solar time
 
-constexpr bazi usec_to_bazi(int64_t usec, double lon) noexcept {
+constexpr bazi usec_to_bazi(int64_t usec, math::fix64_t lon) noexcept {
     int32_t cjie = usec_to_cjie(usec);
-    double bias_lon = _rst::bias_lon(lon);
-    double bias_eot = _rst::bias_eot(usec, cjie);
-    double brst = bias_lon + bias_eot;
-    int64_t rsec = usec + math::round<int64_t>(brst);
+    math::fix64_t bias_lon = _rst::bias_lon(lon);
+    math::fix64_t bias_eot = _rst::bias_eot(usec, cjie);
+    math::fix64_t bias_rst = bias_lon + bias_eot;
+    int64_t rsec = usec + math::safe_int(bias_rst);
     int64_t bshi = math::pydiv<int64_t>(rsec + 3600, 7200);
     int32_t bday = math::pydiv<int64_t>(rsec, 86400);
     int32_t byue = (cjie - 3) >> 1;
@@ -436,9 +477,19 @@ constexpr bazi usec_to_bazi(int64_t usec, double lon) noexcept {
     return bazi{nzhu, yzhu, rzhu, szhu};
 }
 
-constexpr bazi dati_to_bazi(dati zond, double lon) noexcept {
+constexpr bazi usec_to_bazi(int64_t usec, double lon) noexcept {
+    math::fix64_t flon = math::make_fix64(lon);
+    return usec_to_bazi(usec, flon);
+}
+
+constexpr bazi dati_to_bazi(dati zond, math::fix64_t lon) noexcept {
     int64_t usec = dati_to_usec(zond);
     return usec_to_bazi(usec, lon);
+}
+
+constexpr bazi dati_to_bazi(dati zond, double lon) noexcept {
+    math::fix64_t flon = math::make_fix64(lon);
+    return dati_to_bazi(zond, flon);
 }
 
 } // namespace iw17
