@@ -9,19 +9,21 @@ namespace iw17::math {
 
 inline namespace literal {
 
-constexpr int32_t operator""_i32(unsigned long long n) noexcept {
+using uintmax_t = unsigned long long;
+
+constexpr int32_t operator""_i32(uintmax_t n) noexcept {
     return static_cast<int32_t>(n);
 }
 
-constexpr uint32_t operator""_u32(unsigned long long n) noexcept {
+constexpr uint32_t operator""_u32(uintmax_t n) noexcept {
     return static_cast<uint32_t>(n);
 }
 
-constexpr int64_t operator""_i64(unsigned long long n) noexcept {
+constexpr int64_t operator""_i64(uintmax_t n) noexcept {
     return static_cast<int64_t>(n);
 }
 
-constexpr uint64_t operator""_u64(unsigned long long n) noexcept {
+constexpr uint64_t operator""_u64(uintmax_t n) noexcept {
     return static_cast<uint64_t>(n);
 }
 
@@ -122,7 +124,6 @@ constexpr double show_double(fix64_t a) noexcept {
 
 inline namespace literal {
 
-using uintmax_t = unsigned long long;
 using floatmax_t = long double;
 
 constexpr fix64_t operator""_fix(uintmax_t n) noexcept {
