@@ -72,7 +72,7 @@ constexpr int32_t yd_pred(int32_t cyue) noexcept {
 constexpr int32_t yd_resd(int32_t cyue) noexcept {
     cyue -= _data::CYUE_MIN;
     auto [isub, ibit] = math::cdivmod<uint32_t>(cyue, 4);
-    isub = math::clip<int32_t>(isub, 0, _data::YD_NUM);
+    isub = math::clip<int32_t>(isub, 0, _data::YD_NUM - 1);
     constexpr int32_t SIZE = sizeof(_data::YD_RESD_0);
     auto [iarr, iloc] = math::cdivmod<int32_t>(isub, SIZE);
     const uint8_t *arrd = _data::YD_ARRD[iarr];
