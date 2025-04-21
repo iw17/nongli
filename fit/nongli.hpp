@@ -5,6 +5,7 @@
 
 #include "data.hpp"
 #include "dati.hpp"
+#include "math.hpp"
 
 namespace iw17 {
 
@@ -296,7 +297,8 @@ enum class zodiac: int8_t { // NOT part of `nongli`
 
 constexpr zodiac jieqi_to_zodiac(jieqi jie) noexcept {
     int8_t ijie = math::clip<int8_t>(int8_t(jie), 0, 23);
-    int8_t izod = (ijie - 6 + 24 * (ijie < 6)) / 2;
+    constexpr int8_t CF = int8_t(jieqi::chunfen);
+    int8_t izod = (ijie - CF + 24 * (ijie < CF)) / 2;
     return zodiac(izod);
 }
 
@@ -353,6 +355,24 @@ constexpr ganzhi nian_to_ganzhi(int16_t nian) noexcept {
     return ganzhi(nord);
 }
 
+constexpr ganzhi uday_to_ganzhi(int32_t uday) noexcept {
+    int32_t dord = math::pymod<int32_t>(uday + 17, 60);
+    return ganzhi(dord);
+}
+
+constexpr ganzhi riqi_to_ganzhi(riqi rizi) noexcept {
+    int32_t uday = riqi_to_uday(rizi);
+    return uday_to_ganzhi(uday);
+}
+
+constexpr riqi ganzhi_to_riqi(riqi nianyue, ganzhi tian) noexcept {
+    auto [nian, ryue, _] = nianyue;
+    ganzhi rz01 = riqi_to_ganzhi({nian, ryue, 0});
+    int8_t diff = int8_t(tian) - int8_t(rz01);
+    nianyue.tian = diff + 60 * (diff < 0);
+    return nianyue;
+}
+
 constexpr ganzhi byue_to_ganzhi(int32_t byue) noexcept {
     int32_t yord = math::pymod<int32_t>(byue + 14, 60);
     return ganzhi(yord);
@@ -371,7 +391,7 @@ constexpr ganzhi bshi_to_ganzhi(int64_t bshi) noexcept {
 constexpr int32_t sui_to_toufu(int16_t sui) noexcept {
     int64_t usxz = shihou_to_usec({sui, jieqi::xiazhi});
     int32_t udxz = usec_to_uday(usxz);
-    tiangan tgxz = ganzhi_to_tiangan(bday_to_ganzhi(udxz));
+    tiangan tgxz = ganzhi_to_tiangan(uday_to_ganzhi(udxz));
     int8_t diff = int8_t(tiangan::geng) - int8_t(tgxz);
     int8_t dtxz = math::pymod<int8_t>(diff, 10);
     return udxz + dtxz + 20;
@@ -380,7 +400,7 @@ constexpr int32_t sui_to_toufu(int16_t sui) noexcept {
 constexpr int32_t sui_to_sanfu(int16_t sui) noexcept {
     int64_t uslq = shihou_to_usec({sui, jieqi::liqiu});
     int32_t udlq = usec_to_uday(uslq);
-    tiangan tglq = ganzhi_to_tiangan(bday_to_ganzhi(udlq));
+    tiangan tglq = ganzhi_to_tiangan(uday_to_ganzhi(udlq));
     int8_t diff = int8_t(tiangan::geng) - int8_t(tglq);
     int8_t dtlq = math::pymod<int8_t>(diff, 10);
     return udlq + dtlq;
@@ -438,8 +458,8 @@ constexpr math::fix64_t bias_eot(int64_t usec, int32_t cjie) noexcept {
     oble = math::fast_mul(oble, ucen) + OBLE_COEFS[1];
     oble = math::fast_mul(oble, ucen) + OBLE_COEFS[0];
     // true longitude of the Sun on the ecliptic
-    constexpr int32_t ORD_CF = int32_t(jieqi::chunfen);
-    int32_t ljie = math::pymod<int32_t>(cjie - ORD_CF, 24);
+    constexpr int32_t CF = int32_t(jieqi::chunfen);
+    int32_t ljie = math::pymod<int32_t>(cjie - CF, 24);
     int64_t last = cjie_to_usec(cjie);
     int64_t next = cjie_to_usec(cjie + 1);
     int64_t past = usec - last, jdur = next - last;
