@@ -51,7 +51,7 @@ Open `data/coefs.ipynb` with Jupyter Notebook and export fitting arguments and r
 
 ## Fitting
 
-All the fittings and equation of time (EoT) bias calculations perform integral and fixed-point additions, subtractions, multiplications and bitwise operations to avoid floating-point arithmetic and improve performance. Since C++20, right-shifts on signed integers are supposed to be arithmetic. Most of C++ compilers perform right-shifts this way, and it is assumed that the user's compiler does as well, even if compiling in C++17.
+All the fittings and equation of time (EoT) bias calculations perform integral and fixed-point operations to avoid floating-point arithmetic and improve performance. Since C++20, right-shifts on signed integers are supposed to be arithmetic. Most of C++ compilers perform right-shifts this way, and it is assumed that the user's compiler does as well, even if compiling in C++17.
 
 ### Running Test Examples
 
