@@ -82,7 +82,6 @@ def solar_abbr(index: int) -> str:
 
     Args:
         index (int): index of the `jieqi` input
-        abbr (bool): uses abbr or `hanzi`; default False
     Returns:
         str: abbreviation of the `jieqi` input
 
