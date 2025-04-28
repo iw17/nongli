@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "nongli.hpp"
 
 constexpr bool operator==(iw17::date a, iw17::date b) noexcept {
