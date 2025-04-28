@@ -46,8 +46,15 @@ constexpr bool operator!=(iw17::bazi a, iw17::bazi b) noexcept {
     return !(a == b);
 }
 
-int32_t test() noexcept {
-    int32_t score = 0;
+#include "suite.hpp"
+
+uint32_t test() noexcept {
+    // not `using enum`, compatible with C++17
+    using tz = iw17::tzinfo;
+    using gz = iw17::ganzhi;
+    using jq = iw17::jieqi;
+    using namespace iw17::math::literal;
+    //int32_t score = 0;
     constexpr int32_t N = 4;
     constexpr int64_t usecs[N] = {
         0, 1079857804, 1709136666, 1738617617,
@@ -56,10 +63,10 @@ int32_t test() noexcept {
         0, 12498, 19782, 20123,
     };
     constexpr iw17::dati zonds[N] = {
-        iw17::dati{1970,  1,  1,  8,  0,  0, iw17::tzinfo::east_0800},
-        iw17::dati{2004,  3, 21, 16, 30,  4, iw17::tzinfo::east_0800},
-        iw17::dati{2024,  2, 29,  0, 11,  6, iw17::tzinfo::east_0800},
-        iw17::dati{2025,  2,  4,  5, 20, 17, iw17::tzinfo::east_0800},
+        iw17::dati{1970,  1,  1,  8,  0,  0, tz::east_0800},
+        iw17::dati{2004,  3, 21, 16, 30,  4, tz::east_0800},
+        iw17::dati{2024,  2, 29,  0, 11,  6, tz::east_0800},
+        iw17::dati{2025,  2,  4,  5, 20, 17, tz::east_0800},
     };
     constexpr iw17::date locds[N] = {
         iw17::date{1970,  1,  1},
@@ -67,7 +74,6 @@ int32_t test() noexcept {
         iw17::date{2024,  2, 29},
         iw17::date{2025,  2,  4},
     };
-    using gz = iw17::ganzhi; // not `using enum`, compatible with C++17
     constexpr iw17::bazi bazis[N] = {
         iw17::bazi{gz::ji_you, gz::bing_zi, gz::xin_si, gz::ren_chen},
         iw17::bazi{gz::jia_shen, gz::ding_mao, gz::ji_hai, gz::ren_shen},
@@ -81,16 +87,16 @@ int32_t test() noexcept {
         iw17::riqi{2025,  2,  7},
     };
     constexpr iw17::shihou shis[N] = {
-        iw17::shihou{1970, iw17::jieqi::dongzhi},
-        iw17::shihou{2004, iw17::jieqi::chunfen},
-        iw17::shihou{2024, iw17::jieqi::yushui},
-        iw17::shihou{2025, iw17::jieqi::lichun},
+        iw17::shihou{1970, jq::dongzhi},
+        iw17::shihou{2004, jq::chunfen},
+        iw17::shihou{2024, jq::yushui},
+        iw17::shihou{2025, jq::lichun},
     };
     constexpr iw17::dati datis[N] = {
-        iw17::dati{1969, 12, 22,  8, 43, 41, iw17::tzinfo::east_0800},
-        iw17::dati{2004,  3, 20, 14, 48, 38, iw17::tzinfo::east_0800},
-        iw17::dati{2024,  2, 19, 12, 13, 10, iw17::tzinfo::east_0800},
-        iw17::dati{2025,  2,  3, 22, 10, 26, iw17::tzinfo::east_0800},
+        iw17::dati{1969, 12, 22,  8, 43, 41, tz::east_0800},
+        iw17::dati{2004,  3, 20, 14, 48, 38, tz::east_0800},
+        iw17::dati{2024,  2, 19, 12, 13, 10, tz::east_0800},
+        iw17::dati{2025,  2,  3, 22, 10, 26, tz::east_0800},
     };
     constexpr iw17::riqi nn01s[N] = {
         iw17::riqi{1970, 22, 24},
@@ -110,69 +116,47 @@ int32_t test() noexcept {
     constexpr int32_t sanfus[N] = {
         219, 12639, 19949, 20309,
     };
+    iw17::test_suite suite;
     for (int32_t i = 0; i < N; i++) {
-        int64_t us = usecs[i];
-        int32_t ud = iw17::usec_to_uday(us);
-        if (udays[i] != ud) {
-            return score;
-        }
-        score += 1;
-        iw17::dati zd = iw17::usec_to_dati(us, iw17::tzinfo::east_0800);
-        if (zonds[i] != zd) {
-            return score;
-        }
-        score += 1;
-        iw17::date ld = iw17::uday_to_date(ud);
-        if (locds[i] != ld) {
-            return score;
-        }
-        score += 1;
-        iw17::bazi bz = iw17::usec_to_bazi(us, 119.0);
-        if (bazis[i] != bz) {
-            return score;
-        }
-        score += 1;
-        iw17::riqi rz = iw17::uday_to_riqi(ud);
-        if (rizis[i] != rz) {
-            return score;
-        }
-        score += 1;
-        iw17::shihou sh = iw17::usec_to_shihou(us);
-        if (shis[i] != sh) {
-            return score;
-        }
-        score += 1;
-        iw17::dati dt = iw17::shihou_to_dati(sh);
-        if (datis[i] != dt) {
-            return score;
-        }
-        score += 1;
-        iw17::riqi n01 = iw17::next_nian(rz, 1);
-        if (nn01s[i] != n01) {
-            return score;
-        }
-        score += 1;
-        iw17::riqi n19 = iw17::next_nian(rz, 19);
-        if (nn19s[i] != n19) {
-            return score;
-        }
-        score += 1;
-        int32_t toufu = iw17::sui_to_toufu(sh.sui);
-        if (toufus[i] != toufu) {
-            return score;
-        }
-        score += 1;
-        int32_t sanfu = iw17::sui_to_sanfu(sh.sui);
-        if (sanfus[i] != sanfu) {
-            return score;
-        }
-        score += 1;
+        suite.test("usec_to_uday",
+            udays[i], iw17::usec_to_uday, usecs[i]
+        );
+        suite.test("usec_to_dati",
+            zonds[i], iw17::usec_to_dati, usecs[i], tz::east_0800
+        );
+        suite.test("uday_to_date",
+            locds[i], iw17::uday_to_date, udays[i]
+        );
+        suite.test("usec_to_bazi",
+            bazis[i], iw17::usec_to_bazi, usecs[i], 119_fix
+        );
+        suite.test("uday_to_riqi",
+            rizis[i], iw17::uday_to_riqi, udays[i]
+        );
+        suite.test("usec_to_shihou",
+            shis[i], iw17::usec_to_shihou, usecs[i]
+        );
+        suite.test("shihou_to_dati",
+            datis[i], iw17::shihou_to_dati, shis[i]
+        );
+        suite.test("next_nian_01",
+            nn01s[i], iw17::next_nian, rizis[i], 1_i16
+        );
+        suite.test("next_nian_19",
+            nn19s[i], iw17::next_nian, rizis[i], 19_i16
+        );
+        suite.test("sui_to_toufu",
+            toufus[i], iw17::sui_to_toufu, shis[i].sui
+        );
+        suite.test("sui_to_sanfu",
+            sanfus[i], iw17::sui_to_sanfu, shis[i].sui
+        );
+        std::putchar('\n');
     }
-    return score;
+    return suite.complete();
 }
 
 int main() {
-    int32_t score = test();
-    std::cout << score << " scores of " << 11 * 4 << '\n';
-    return 0;
+    uint32_t fail = test();
+    return fail != 0;
 }
