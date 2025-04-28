@@ -493,19 +493,9 @@ constexpr bazi usec_to_bazi(int64_t usec, math::fix64 lon) noexcept {
     return bazi{nzhu, yzhu, rzhu, szhu};
 }
 
-constexpr bazi usec_to_bazi(int64_t usec, double lon) noexcept {
-    math::fix64 flon = math::make_fix64(lon);
-    return usec_to_bazi(usec, flon);
-}
-
 constexpr bazi dati_to_bazi(dati zond, math::fix64 lon) noexcept {
     int64_t usec = dati_to_usec(zond);
     return usec_to_bazi(usec, lon);
-}
-
-constexpr bazi dati_to_bazi(dati zond, double lon) noexcept {
-    math::fix64 flon = math::make_fix64(lon);
-    return dati_to_bazi(zond, flon);
 }
 
 } // namespace iw17
