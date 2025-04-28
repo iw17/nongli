@@ -11,6 +11,14 @@ inline namespace literal {
 
 using uintmax_t = unsigned long long;
 
+constexpr int16_t operator""_i16(uintmax_t n) noexcept {
+    return static_cast<int16_t>(n);
+}
+
+constexpr uint16_t operator""_u16(uintmax_t n) noexcept {
+    return static_cast<uint16_t>(n);
+}
+
 constexpr int32_t operator""_i32(uintmax_t n) noexcept {
     return static_cast<int32_t>(n);
 }
