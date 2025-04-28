@@ -440,7 +440,7 @@ constexpr math::fix64 bias_eot(int64_t usec, int32_t cjie) noexcept {
     // hour angle bias from eccentricity
     math::fix64 s1ma = math::sinq(mano);
     math::fix64 s2ma = math::sinq(2 * mano);
-    math::fix64 hecc = -5 * math::fast_mul(ecco, s2ma);
+    math::fix64 hecc = math::fast_mul(-5 * ecco, s2ma);
     hecc = math::fast_mul(ecco, (hecc >> 2) - 2 * s1ma);
     // obliquity of the ecliptic
     constexpr math::fix64 OBLE_COEFS[] = {
