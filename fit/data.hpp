@@ -20,8 +20,6 @@ inline constexpr int32_t CYUE_MAX = +2844;
 inline constexpr int32_t CJIE_MIN = -1680;
 inline constexpr int32_t CJIE_MAX = +5519;
 
-inline constexpr int16_t NR_NUM = 156;
-
 inline constexpr uint8_t NR_RUNS[] = {
     0xd8, 0x5d, 0xdd, 0xd4, 0x2d, 0x6d, 0xdd, 0xd5, 0x2d, 0x7d, 0xdd, 0xd5,
     0x4d, 0xdd, 0xd2, 0xd6, 0x5d, 0xdd, 0xd3, 0xd7, 0x6d, 0xdd, 0xd4, 0x2d,
@@ -41,8 +39,6 @@ inline constexpr uint8_t NR_RUNS[] = {
 inline constexpr int64_t NY_BITS = 14;
 
 inline constexpr int64_t NY_COEF[] = { 12, -24366, 6033, 7356 };
-
-inline constexpr int16_t NY_NUM = 48;
 
 inline constexpr uint8_t NY_RESY[] = {
     0xb6, 0xb4, 0xb5, 0xa5, 0xad, 0x2d, 0x6d, 0x6d, 0x69, 0x6b, 0x6b, 0x5b,
@@ -135,8 +131,6 @@ inline constexpr uint8_t YD_RESD_0[] = {
     0xba, 0xab, 0x95, 0xe9, 0xae, 0x5a, 0xa5, 0xba, 0xaa, 0xa6, 0xa9, 0xaa,
     0xaa, 0xaa, 0xaa, 0xaa, 0x66, 0xaa, 0xab, 0x9a, 0x99, 0xee, 0x6a, 0x66,
 };
-
-inline constexpr int32_t YD_NUM = 936;
 
 inline constexpr const uint8_t *YD_ARRD[] = {
     YD_RESD_0,
@@ -1091,8 +1085,6 @@ inline constexpr uint8_t JS_RESS_2[] = {
     0x74, 0xf4, 0x47, 0x4a, 0x73, 0x3f, 0x86, 0x13, 0x3f, 0xd8, 0xa2, 0x40,
 };
 
-inline constexpr int32_t JS_NUM = 10812;
-
 inline constexpr const uint8_t *JS_ARRS[] = {
     JS_RESS_0, JS_RESS_1, JS_RESS_2,
 };
@@ -1101,7 +1093,7 @@ inline constexpr int64_t SJ_BITS = 19;
 
 inline constexpr int64_t SJ_COEF[] = { 1, 209053, 138479 };
 
-} // namespace iw17::_data, 13576 bytes in total
+} // namespace iw17::_data, 13564 bytes in total
 
 #endif // IW_DATA_HPP
 

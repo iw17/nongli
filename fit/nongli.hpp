@@ -34,7 +34,6 @@ constexpr int8_t nyue_to_ryue(int8_t nyue, int8_t run) noexcept {
 constexpr int8_t nian_to_run(int16_t nian) noexcept {
     nian -= _data::NIAN_MIN;
     auto [iloc, ibit] = math::cdivmod<uint8_t>(nian, 2);
-    iloc = math::clip<int16_t>(iloc, 0, _data::NR_NUM - 1);
     return (_data::NR_RUNS[iloc] >> (4 * ibit)) & 0b1111;
 }
 
@@ -49,7 +48,6 @@ constexpr int32_t ny_pred(int16_t nian) noexcept {
 constexpr int32_t ny_resy(int16_t nian) noexcept {
     nian -= _data::NIAN_MIN;
     auto [iloc, ibit] = math::cdivmod<uint32_t>(nian, 8);
-    iloc = math::clip<int16_t>(iloc, 0, _data::NY_NUM - 1);
     return (_data::NY_RESY[iloc] >> ibit) & 1;
 }
 
@@ -72,7 +70,6 @@ constexpr int32_t yd_pred(int32_t cyue) noexcept {
 constexpr int32_t yd_resd(int32_t cyue) noexcept {
     cyue -= _data::CYUE_MIN;
     auto [isub, ibit] = math::cdivmod<uint32_t>(cyue, 4);
-    isub = math::clip<int32_t>(isub, 0, _data::YD_NUM - 1);
     constexpr int32_t SIZE = sizeof(_data::YD_RESD_0);
     auto [iarr, iloc] = math::cdivmod<int32_t>(isub, SIZE);
     const uint8_t *arrd = _data::YD_ARRD[iarr];
@@ -229,7 +226,6 @@ constexpr int64_t js_pred(shihou shi) noexcept {
 
 constexpr int64_t js_ress(int32_t cjie) noexcept {
     int32_t isub = (cjie - _data::CJIE_MIN) * 3 / 2;
-    isub = math::clip<int32_t>(isub, 0, _data::JS_NUM - 1);
     constexpr int32_t SIZE = sizeof(_data::JS_RESS_0);
     auto [iarr, iloc] = math::cdivmod<int32_t>(isub, SIZE);
     const uint8_t *arrs = _data::JS_ARRS[iarr];
