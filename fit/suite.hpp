@@ -1,5 +1,5 @@
-#ifndef IW_TEST_HPP
-#define IW_TEST_HPP 20250628L
+#ifndef IW_SUITE_HPP
+#define IW_SUITE_HPP 20250628L
 
 #include <chrono>
 #include <cinttypes>
@@ -65,4 +65,4 @@ uint32_t complete() const noexcept {
 
 } // namespace iw17
 
-#endif // IW_TEST_HPP
+#endif // IW_SUITE_HPP
