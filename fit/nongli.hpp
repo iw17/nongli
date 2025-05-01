@@ -229,7 +229,7 @@ constexpr int64_t js_ress(int32_t cjie) noexcept {
     constexpr int32_t SIZE = sizeof(_data::JS_RESS_0);
     auto [iarr, iloc] = math::cdivmod<int32_t>(isub, SIZE);
     const uint8_t *arrs = _data::JS_ARRS[iarr];
-    //// 0x12, 0x34, 0x56 -> 0x412, 0x563
+    // 0x12, 0x34, 0x56 -> 0x412, 0x563
     uint32_t pair = (arrs[iloc + 1] << 8) | arrs[iloc];
     return (cjie & 1) ? (pair >> 4) : (pair & 0x0fff);
 }
