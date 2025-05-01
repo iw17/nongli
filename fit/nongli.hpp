@@ -70,8 +70,7 @@ constexpr int32_t yd_pred(int32_t cyue) noexcept {
 constexpr int32_t yd_resd(int32_t cyue) noexcept {
     cyue -= _data::CYUE_MIN;
     auto [isub, ibit] = math::cdivmod<uint32_t>(cyue, 4);
-    constexpr int32_t SIZE = sizeof(_data::YD_RESD_0);
-    auto [iarr, iloc] = math::cdivmod<int32_t>(isub, SIZE);
+    auto [iarr, iloc] = math::cdivmod<int32_t>(isub, _data::YD_PAGE);
     const uint8_t *arrd = _data::YD_ARRD[iarr];
     return (arrd[isub] >> (2 * ibit)) & 0b0011;
 }
@@ -226,8 +225,7 @@ constexpr int64_t js_pred(shihou shi) noexcept {
 
 constexpr int64_t js_ress(int32_t cjie) noexcept {
     int32_t isub = (cjie - _data::CJIE_MIN) * 3 / 2;
-    constexpr int32_t SIZE = sizeof(_data::JS_RESS_0);
-    auto [iarr, iloc] = math::cdivmod<int32_t>(isub, SIZE);
+    auto [iarr, iloc] = math::cdivmod<int32_t>(isub, _data::JS_PAGE);
     const uint8_t *arrs = _data::JS_ARRS[iarr];
     // 0x12, 0x34, 0x56 -> 0x412, 0x563
     uint32_t pair = (arrs[iloc + 1] << 8) | arrs[iloc];

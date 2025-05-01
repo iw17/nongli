@@ -51,6 +51,8 @@ inline constexpr int64_t YD_BITS = 19;
 
 inline constexpr int64_t YD_COEF[] = { 29, 34, 278179, 372817 };
 
+inline constexpr int64_t YD_PAGE = 3780;
+
 inline constexpr uint8_t YD_RESD_0[] = {
     0xaa, 0x99, 0xa6, 0xaa, 0x66, 0xa6, 0xab, 0x9a, 0x99, 0xee, 0x6e, 0x56,
     0xa6, 0xbb, 0x6a, 0x99, 0xea, 0xaa, 0x6a, 0xaa, 0xaa, 0xaa, 0xaa, 0xa9,
@@ -174,6 +176,8 @@ inline constexpr int64_t JS_COEF[][7] = {
     { -697,  4275,   7556, -54989, -130811, 424887, 29023533 },
     { -554,  4415,   3669, -57280,  -98043, 429911, 30293078 },
 };
+
+inline constexpr int64_t JS_PAGE = 3780;
 
 inline constexpr uint8_t JS_RESS_0[] = {
     0x20, 0x34, 0x21, 0xb5, 0x02, 0x18, 0x03, 0xd3, 0x19, 0xa0, 0x02, 0x1d,
@@ -1093,7 +1097,7 @@ inline constexpr int64_t SJ_BITS = 19;
 
 inline constexpr int64_t SJ_COEF[] = { 1, 209053, 138479 };
 
-} // namespace iw17::_data, 13564 bytes in total
+} // namespace iw17::_data, 13576 bytes in total
 
 #endif // IW_DATA_HPP
 
