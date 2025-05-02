@@ -1097,7 +1097,7 @@ inline constexpr int64_t SJ_BITS = 19;
 
 inline constexpr int64_t SJ_COEF[] = { 1, 209053, 138479 };
 
-} // namespace iw17::_data, 13576 bytes in total
+} // namespace iw17::_data, 13572 bytes in total
 
 #endif // IW_DATA_HPP
 
