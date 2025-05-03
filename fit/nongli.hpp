@@ -410,10 +410,6 @@ constexpr math::fix64 bias_lon(math::fix64 lon) noexcept {
     return 240 * lon;
 }
 
-constexpr math::fix64 bias_lon(double lon) noexcept {
-    return math::make_fix64(240.0 * lon);
-}
-
 constexpr math::fix64 bias_eot(int64_t usec, int32_t cjie) noexcept {
     using namespace math::literal;
     constexpr int64_t EPOCH_J2K = 946728000;
