@@ -293,7 +293,7 @@ enum class zodiac: int8_t { // NOT part of `nongli`
 };
 
 constexpr zodiac jieqi_to_zodiac(jieqi jie) noexcept {
-    int8_t ijie = math::clip<int8_t>(int8_t(jie), 0, 23);
+    int8_t ijie = int8_t(jie);
     constexpr int8_t CF = int8_t(jieqi::chunfen);
     int8_t izod = (ijie - CF + 24 * (ijie < CF)) / 2;
     return zodiac(izod);
