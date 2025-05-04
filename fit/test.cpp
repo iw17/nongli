@@ -126,7 +126,7 @@ uint32_t test() noexcept {
             locds[i], iw17::uday_to_date, udays[i]
         );
         suite.test("usec_to_bazi",
-            bazis[i], iw17::usec_to_bazi, usecs[i], 119_fix
+            bazis[i], iw17::usec_to_bazi, usecs[i], 119.0
         );
         suite.test("uday_to_riqi",
             rizis[i], iw17::uday_to_riqi, udays[i]

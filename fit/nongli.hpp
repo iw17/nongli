@@ -473,9 +473,10 @@ constexpr math::fix64 bias_eot(int64_t usec, int32_t cjie) noexcept {
 
 } // namespace _rst: real solar time
 
-constexpr bazi usec_to_bazi(int64_t usec, math::fix64 lon) noexcept {
+constexpr bazi usec_to_bazi(int64_t usec, double lon) noexcept {
     int32_t cjie = usec_to_cjie(usec);
-    math::fix64 bias_lon = _rst::bias_lon(lon);
+    math::fix64 flon = math::make_fix64(lon);
+    math::fix64 bias_lon = _rst::bias_lon(flon);
     math::fix64 bias_eot = _rst::bias_eot(usec, cjie);
     math::fix64 bias_rst = bias_lon + bias_eot;
     int64_t rsec = usec + math::safe_int(bias_rst);
@@ -490,7 +491,7 @@ constexpr bazi usec_to_bazi(int64_t usec, math::fix64 lon) noexcept {
     return bazi{nzhu, yzhu, rzhu, szhu};
 }
 
-constexpr bazi dati_to_bazi(dati zond, math::fix64 lon) noexcept {
+constexpr bazi dati_to_bazi(dati zond, double lon) noexcept {
     int64_t usec = dati_to_usec(zond);
     return usec_to_bazi(usec, lon);
 }
