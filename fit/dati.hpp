@@ -19,9 +19,9 @@ constexpr int32_t date_to_uday(date locd) noexcept {
     int32_t days = (153 * m + 2) / 5 + d - 1;
     auto [c41q, c41r] = math::pydivmod<int32_t>(y, 400);
     days += (c41q - 5) * 146097;
-    auto [cy4q, cy4r] = math::cdivmod<int32_t>(c41r, 100);
+    auto [cy4q, cy4r] = math::cdivmod<uint32_t>(c41r, 100);
     days += cy4q * 36524;
-    auto [y41q, y41r] = math::cdivmod<int32_t>(cy4r, 4);
+    auto [y41q, y41r] = math::cdivmod<uint32_t>(cy4r, 4);
     days += y41q * 1461 + y41r * 365;
     return days + 11017;
 }
@@ -33,13 +33,13 @@ constexpr date uday_to_date(int32_t uday) noexcept {
     if (c41r == 146096) {
         return date{int16_t(y + 400), 2, 29};
     }
-    auto [cy4q, cy4r] = math::cdivmod<int32_t>(c41r, 36524);
-    auto [y41q, y41r] = math::cdivmod<int32_t>(cy4r, 1461);
+    auto [cy4q, cy4r] = math::cdivmod<uint32_t>(c41r, 36524);
+    auto [y41q, y41r] = math::cdivmod<uint32_t>(cy4r, 1461);
     y += cy4q * 100 + y41q * 4;
     if (y41r == 1460) {
         return date{int16_t(y + 4), 2, 29};
     }
-    auto [ym5q, ym5r] = math::cdivmod<int32_t>(y41r, 365);
+    auto [ym5q, ym5r] = math::cdivmod<uint32_t>(y41r, 365);
     int8_t m = (5 * ym5r + 2) / 153;
     int8_t d = 1 + ym5r - (153 * m + 2) / 5;
     if ((m += 3) > 12) {
@@ -108,8 +108,8 @@ constexpr dati usec_to_dati(int64_t usec, tzinfo zone) noexcept {
     int64_t lsec = usec + zone_to_offset(zone);
     auto [uday, dsec] = math::pydivmod<int64_t>(lsec, 86400);
     auto [y, m, d] = uday_to_date(uday);
-    auto [hh, hm] = math::cdivmod<int32_t>(dsec, 3600);
-    auto [mm, ss] = math::cdivmod<int32_t>(hm, 60);
+    auto [hh, hm] = math::cdivmod<uint32_t>(dsec, 3600);
+    auto [mm, ss] = math::cdivmod<uint32_t>(hm, 60);
     return dati{y, m, d, int8_t(hh), int8_t(mm), int8_t(ss), zone};
 }
 

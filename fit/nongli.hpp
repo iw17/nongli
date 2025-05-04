@@ -30,7 +30,7 @@ struct riqi { // `nian`, `ryue`, `tian`
 };
 
 constexpr int8_t ryue_to_nyue(int8_t ryue, int8_t run) noexcept {
-    return ryue / 2 - (2 * run >= ryue);
+    return (ryue >> 1) - (2 * run >= ryue);
 }
 
 constexpr int8_t nyue_to_ryue(int8_t nyue, int8_t run) noexcept {
@@ -38,7 +38,7 @@ constexpr int8_t nyue_to_ryue(int8_t nyue, int8_t run) noexcept {
 }
 
 constexpr int8_t nian_to_run(int16_t nian) noexcept {
-    auto [iloc, ibit] = math::cdivmod<uint8_t>(nian - NIAN_MIN, 2);
+    auto [iloc, ibit] = math::cdivmod<uint16_t>(nian - NIAN_MIN, 2);
     return (_data::NR_RUNS[iloc] >> (4 * ibit)) & 0b1111;
 }
 
@@ -73,7 +73,7 @@ constexpr int32_t yd_pred(int32_t cyue) noexcept {
 
 constexpr int32_t yd_resd(int32_t cyue) noexcept {
     auto [isub, ibit] = math::cdivmod<uint32_t>(cyue - CYUE_MIN, 4);
-    auto [iarr, iloc] = math::cdivmod<int32_t>(isub, _data::YD_PAGE);
+    auto [iarr, iloc] = math::cdivmod<uint32_t>(isub, _data::YD_PAGE);
     const uint8_t *arrd = _data::YD_ARRD[iarr];
     return (arrd[isub] >> (2 * ibit)) & 0b0011;
 }
@@ -228,7 +228,7 @@ constexpr int64_t js_pred(shihou shi) noexcept {
 
 constexpr int64_t js_ress(int32_t cjie) noexcept {
     int32_t isub = (cjie - CJIE_MIN) * 3 / 2;
-    auto [iarr, iloc] = math::cdivmod<int32_t>(isub, _data::JS_PAGE);
+    auto [iarr, iloc] = math::cdivmod<uint32_t>(isub, _data::JS_PAGE);
     const uint8_t *arrs = _data::JS_ARRS[iarr];
     // 0x12, 0x34, 0x56 -> 0x412, 0x563
     uint32_t pair = (arrs[iloc + 1] << 8) | arrs[iloc];
