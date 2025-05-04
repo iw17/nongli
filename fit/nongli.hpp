@@ -9,6 +9,12 @@
 
 namespace iw17 {
 
+using _data::SUI_MIN, _data::SUI_MAX;
+using _data::NIAN_MIN, _data::NIAN_MAX;
+using _data::YEAR_MIN, _data::YEAR_MAX;
+using _data::CJIE_MIN, _data::CJIE_MAX;
+using _data::CYUE_MIN, _data::CYUE_MAX;
+
 constexpr int64_t uday_to_usec(int32_t uday) noexcept {
     return int64_t(86400) * uday - 28800;
 }
@@ -32,8 +38,7 @@ constexpr int8_t nyue_to_ryue(int8_t nyue, int8_t run) noexcept {
 }
 
 constexpr int8_t nian_to_run(int16_t nian) noexcept {
-    nian -= _data::NIAN_MIN;
-    auto [iloc, ibit] = math::cdivmod<uint8_t>(nian, 2);
+    auto [iloc, ibit] = math::cdivmod<uint8_t>(nian - NIAN_MIN, 2);
     return (_data::NR_RUNS[iloc] >> (4 * ibit)) & 0b1111;
 }
 
@@ -46,8 +51,7 @@ constexpr int32_t ny_pred(int16_t nian) noexcept {
 }
 
 constexpr int32_t ny_resy(int16_t nian) noexcept {
-    nian -= _data::NIAN_MIN;
-    auto [iloc, ibit] = math::cdivmod<uint32_t>(nian, 8);
+    auto [iloc, ibit] = math::cdivmod<uint32_t>(nian - NIAN_MIN, 8);
     return (_data::NY_RESY[iloc] >> ibit) & 1;
 }
 
@@ -68,8 +72,7 @@ constexpr int32_t yd_pred(int32_t cyue) noexcept {
 }
 
 constexpr int32_t yd_resd(int32_t cyue) noexcept {
-    cyue -= _data::CYUE_MIN;
-    auto [isub, ibit] = math::cdivmod<uint32_t>(cyue, 4);
+    auto [isub, ibit] = math::cdivmod<uint32_t>(cyue - CYUE_MIN, 4);
     auto [iarr, iloc] = math::cdivmod<int32_t>(isub, _data::YD_PAGE);
     const uint8_t *arrd = _data::YD_ARRD[iarr];
     return (arrd[isub] >> (2 * ibit)) & 0b0011;
@@ -224,7 +227,7 @@ constexpr int64_t js_pred(shihou shi) noexcept {
 }
 
 constexpr int64_t js_ress(int32_t cjie) noexcept {
-    int32_t isub = (cjie - _data::CJIE_MIN) * 3 / 2;
+    int32_t isub = (cjie - CJIE_MIN) * 3 / 2;
     auto [iarr, iloc] = math::cdivmod<int32_t>(isub, _data::JS_PAGE);
     const uint8_t *arrs = _data::JS_ARRS[iarr];
     // 0x12, 0x34, 0x56 -> 0x412, 0x563
