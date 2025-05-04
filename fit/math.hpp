@@ -110,7 +110,7 @@ constexpr fix64 make_fix64(int64_t n) noexcept {
 
 constexpr fix64 make_fix64(double d) noexcept {
     double dval = _fix::SCALE * d;
-    int64_t ival = dval + (d < 0.0 ? -0.5 : 0.5);
+    int64_t ival = dval + 0.5 - (d < 0.0);
     return fill_fix64(ival);
 }
 
