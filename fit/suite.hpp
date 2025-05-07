@@ -7,6 +7,18 @@
 
 namespace iw17 {
 
+constexpr const char *ordinal_suffix(uint32_t n) noexcept {
+    constexpr const char *SUFFIXES[] = {
+        "th", "st", "nd", "rd",
+    };
+    n %= 100;
+    if (n >= 4 && n <= 20) {
+        return SUFFIXES[0];
+    }
+    n %= 10;
+    return SUFFIXES[(n >= 1 && n <= 3) ? n : 0];
+}
+
 struct test_suite {
 
 using str_t = const char *;
@@ -26,20 +38,21 @@ test_suite() noexcept: pass(0), fail(0) {
 template <class Ret, class... Args>
 bool test(str_t msg, const Ret &real, Ret (*func)(Args...), Args... args) {
     constexpr str_t FMT[] = {
-        "[ ] %" PRIu32 "th item passed on %s",
-        "[X] %" PRIu32 "th item failed on %s",
+        "[ ] %" PRIu32 "%s item passed on %s",
+        "[X] %" PRIu32 "%s item failed on %s",
         ", taking %" PRId64 " ns\n",
     };
     auto t0 = std::chrono::steady_clock::now();
     bool pass = func(args...) == real;
     auto t1 = std::chrono::steady_clock::now();
     std::FILE *fp = nullptr;
-    uint32_t count = this->pass + this->fail;
+    uint32_t count = this->pass + this->fail + 1;
+    const char *suf = ordinal_suffix(count);
     if (pass) {
-        std::fprintf((fp = stdout), FMT[0], count, msg);
+        std::fprintf((fp = stdout), FMT[0], count, suf, msg);
         this->pass += 1;
     } else {
-        std::fprintf((fp = stderr), FMT[1], count, msg);
+        std::fprintf((fp = stderr), FMT[1], count, suf, msg);
         this->fail += 1;
     }
     dur_t dur = std::chrono::duration_cast<dur_t>(t1 - t0);
