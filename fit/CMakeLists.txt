@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(nongli-test)
+project(NongliTest)
+enable_testing()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -16,4 +17,5 @@ else()
     add_compile_options(-Wpedantic)
 endif()
 
-add_executable(test test.cpp)
+add_executable(nltest "test.cpp")
+add_test(NAME NongliTest COMMAND nltest)
