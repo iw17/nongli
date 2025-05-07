@@ -32,7 +32,7 @@ cd data/
 python -u spider.py
 ```
 
-The constants `MIN` and `MAX` in the spider script are modifiable. Note that data before -4712 A.D. (4713 B.C.) and after 9999 A.D. may be inaccurate due to the limited precision of the fitting algorithms in SXWNL.
+The constants `MIN` and `MAX` in `spider.py` are modifiable. Note that data before -4712 A.D. (4713 B.C.) and after 9999 A.D. may be inaccurate due to the limited precision of the fitting algorithms in SXWNL.
 
 ### Rearranging Data
 
@@ -43,11 +43,16 @@ cd data/
 python -u split.py
 ```
 
-The constants `MIN` and `MAX` in the notebook code are modifiable without exceeding the original data range. Note that this repository is NOT applicable for **historical** calendars **actually** used in and before 240s A.D.
+Note that this repository is NOT applicable for **historical** calendars **actually** used in and before 240s A.D.
 
 ### Generating C++ Data File
 
-Open `data/coefs.ipynb` with Jupyter Notebook and export fitting arguments and residuals to `fit/data.hpp` by running all cells.
+The constants `MIN` and `MAX` in `coefs.py` are modifiable without exceeding the original data range. To export fitting arguments and residuals to `fit/data.hpp`, use the following commands:
+
+```bash
+cd data/
+python -u coefs.py
+```
 
 ## Fitting
 
@@ -55,24 +60,14 @@ All the fittings and equation of time (EoT) bias calculations perform integral a
 
 ### Running Test Examples
 
-To run test examples, use the following commands if using GCC or Clang and Make:
-
-```bash
-cd fit/
-mkdir build/ && cd build/
-cmake ..
-make
-./test # or './test.exe' if on Windows
-```
-
-Or use the following commands if using MSVC and NMAKE:
+To run test examples, use the following commands:
 
 ```bash
 cd fit/
 mkdir build/ && cd build/
 cmake ..
 cmake --build . --config Release
-./Release/test.exe
+ctest -C Release
 ```
 
 ### `Riqi`: Date in `Nongli`

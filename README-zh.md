@@ -11,7 +11,7 @@
 
 ### 环境配置
 
-执行如下命令配置环境：
+执行如下命令，配置环境：
 
 ```bash
 cd data/
@@ -21,7 +21,7 @@ conda activate Nongli
 
 ### 爬取原始数据
 
-执行如下命令获取原始数据并导出到 `data/build/raw.txt`：
+执行如下命令，获取原始数据并导出到 `data/build/raw.txt`：
 
 ```bash
 cd data/
@@ -32,18 +32,23 @@ python -u spider.py
 
 ### 重排数据
 
-历史上月份序号发生过多次变动，但为方便起见，均用现在的历法排列当时的年份、月份。执行如下命令将重排后的朔与节气信息导出到 `data/build/` 目录下：
+历史上月份序号发生过多次变动，但为方便起见，均用现在的历法排列当时的年份、月份。执行如下命令，将重排后的朔与节气信息导出到 `data/build/` 目录下：
 
 ```bash
 cd data/
 python -u split.py
 ```
 
-笔记本代码中的 `MIN` 和 `MAX` 可以按需修改，但不能超过原始数据的范围。特别提醒：本仓库不适用于计算和研究**历史上**三国及以前**实际**采用的历法。
+特别提醒：本仓库不适用于计算和研究**历史上**三国及以前**实际**采用的历法。
 
 ### 生成 C++ 数据文件
 
-用 Jupyter Notebook 打开 `data/coefs.ipynb`，运行所有代码，将生成的拟合参数与残差数据导出到 `fit/data.hpp`。
+`coefs.py` 中的 `MIN` 和 `MAX` 可以按需修改，但不能超过原始数据的范围。执行如下命令，将生成的拟合参数与残差数据导出到 `fit/data.hpp`：
+
+```bash
+cd data/
+python -u coefs.py
+```
 
 ## 拟合
 
@@ -51,24 +56,14 @@ python -u split.py
 
 ### 运行测试样例
 
-若使用 GCC 或 Clang 编译器和 Make 构建工具，执行如下命令：
-
-```bash
-cd fit/
-mkdir build/ && cd build/
-cmake ..
-make
-./test # or './test.exe' if on Windows
-```
-
-若使用 MSVC 编译器和 NMAKE 构建工具，则执行如下命令：
+执行如下命令，构建并运行测试样例：
 
 ```bash
 cd fit/
 mkdir build/ && cd build/
 cmake ..
 cmake --build . --config Release
-./Release/test.exe
+ctest -C Release
 ```
 
 ### 日期
