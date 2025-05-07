@@ -4,44 +4,25 @@ constexpr bool operator==(iw17::date a, iw17::date b) noexcept {
     return a.year == b.year && a.mon == b.mon && a.day == b.day;
 }
 
-constexpr bool operator!=(iw17::date a, iw17::date b) noexcept {
-    return !(a == b);
-}
-
 constexpr bool operator==(iw17::dati a, iw17::dati b) noexcept {
-    if (a.zone != b.zone || iw17::dati_to_date(a) != iw17::dati_to_date(b)) {
+    if (a.zone != b.zone) {
         return false;
     }
-    return a.hour == b.hour && a.min == b.min && a.sec == b.sec;
-}
-
-constexpr bool operator!=(iw17::dati a, iw17::dati b) noexcept {
-    return !(a == b);
+    return a.year == b.year && a.mon == b.mon && a.day == b.day
+        && a.hour == b.hour && a.min == b.min && a.sec == b.sec;
 }
 
 constexpr bool operator==(iw17::shihou a, iw17::shihou b) noexcept {
     return a.sui == b.sui && a.jie == b.jie;
 }
 
-constexpr bool operator!=(iw17::shihou a, iw17::shihou b) noexcept {
-    return !(a == b);
-}
-
 constexpr bool operator==(iw17::riqi a, iw17::riqi b) noexcept {
     return a.nian == b.nian && a.ryue == b.ryue && a.tian == b.tian;
-}
-
-constexpr bool operator!=(iw17::riqi a, iw17::riqi b) noexcept {
-    return !(a == b);
 }
 
 constexpr bool operator==(iw17::bazi a, iw17::bazi b) noexcept {
     return a.zhu[0] == b.zhu[0] && a.zhu[1] == b.zhu[1]
         && a.zhu[2] == b.zhu[2] && a.zhu[3] == b.zhu[3];
-}
-
-constexpr bool operator!=(iw17::bazi a, iw17::bazi b) noexcept {
-    return !(a == b);
 }
 
 #include "suite.hpp"
