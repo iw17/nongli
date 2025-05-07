@@ -20,14 +20,14 @@ test_suite() noexcept: pass(0), fail(0) {
     std::time_t now = std::time(nullptr);
     std::tm *ptm = std::localtime(&now);
     std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", ptm);
-    std::printf("Test suite initialized at %s\n\n", buf);
+    std::printf("Test suite initialized at %s\n", buf);
 }
 
 template <class Ret, class... Args>
 bool test(str_t msg, const Ret &real, Ret (*func)(Args...), Args... args) {
     constexpr str_t FMT[] = {
-        "[ ] %" PRIu32 "th test passed on %s",
-        "[X] %" PRIu32 "th test failed on %s",
+        "[ ] %" PRIu32 "th item passed on %s",
+        "[X] %" PRIu32 "th item failed on %s",
         ", taking %" PRId64 " ns\n",
     };
     auto t0 = std::chrono::steady_clock::now();
@@ -50,8 +50,8 @@ bool test(str_t msg, const Ret &real, Ret (*func)(Args...), Args... args) {
 uint32_t complete() const noexcept {
     uint32_t total = this->pass + this->fail;
     constexpr str_t FMT[] = {
-        "%" PRIu32 " tests all passed\n",
-        "%" PRIu32 " tests of %" PRIu32 " failed\n",
+        "%" PRIu32 " items all passed\n",
+        "%" PRIu32 " items of %" PRIu32 " failed\n",
     };
     if (this->fail == 0) {
         std::printf(FMT[0], total);

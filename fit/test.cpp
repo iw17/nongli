@@ -52,7 +52,6 @@ uint32_t test() noexcept {
     using gz = iw17::ganzhi;
     using jq = iw17::jieqi;
     using namespace iw17::math::literal;
-    //int32_t score = 0;
     constexpr int32_t N = 4;
     constexpr int64_t usecs[N] = {
         0, 1079857804, 1709136666, 1738617617,
@@ -149,7 +148,6 @@ uint32_t test() noexcept {
         suite.test("sui_to_sanfu",
             sanfus[i], iw17::sui_to_sanfu, shis[i].sui
         );
-        std::putchar('\n');
     }
     return suite.complete();
 }
