@@ -15,6 +15,7 @@ else()
     add_compile_options(-Wall)
     add_compile_options(-Wextra)
     add_compile_options(-Wpedantic)
+    add_compile_options(-Wshadow)
 endif()
 
 add_executable(nltest "test.cpp")
