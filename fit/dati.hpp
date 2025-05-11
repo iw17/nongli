@@ -5,12 +5,14 @@
 
 namespace iw17 {
 
+// Gregorian date
 struct date {
     int16_t year;
     int8_t mon;
     int8_t day;
 };
 
+// Gregorian date to days since 1970-01-01
 constexpr int32_t date_to_uday(date locd) noexcept {
     auto [y, m, d] = locd;
     if ((m -= 3) < 0) {
@@ -26,6 +28,7 @@ constexpr int32_t date_to_uday(date locd) noexcept {
     return days + 11017;
 }
 
+// days since 1970-01-01 to Gregorian date
 constexpr date uday_to_date(int32_t uday) noexcept {
     int32_t days = uday - 11017;
     auto [c41q, c41r] = math::pydivmod<int32_t>(days, 146097);
@@ -48,6 +51,7 @@ constexpr date uday_to_date(int32_t uday) noexcept {
     return date{int16_t(y + ym5q), m, d};
 }
 
+// time zone offsets, not related to locations
 enum class tzinfo: int8_t {
     west_1200,  west_1145,  west_1130,  west_1115,
     west_1100,  west_1045,  west_1030,  west_1015,
@@ -78,10 +82,12 @@ enum class tzinfo: int8_t {
     east_1315,  east_1330,  east_1345,  east_1400,
 };
 
+// time zone to offset secs
 constexpr int64_t zone_to_offset(tzinfo zone) noexcept {
     return 900 * (int64_t(zone) - int64_t(tzinfo::utc));
 }
 
+// Gregorian datetime
 struct dati {
     int16_t year;
     int8_t mon;
@@ -96,6 +102,7 @@ constexpr date dati_to_date(dati zond) noexcept {
     return date{zond.year, zond.mon, zond.day};
 }
 
+// Gregorian datetime to secs since Unix Epoch
 constexpr int64_t dati_to_usec(dati zond) noexcept {
     auto [y, m, d, hh, mm, ss, zz] = zond;
     int32_t uday = date_to_uday(date{y, m, d});
@@ -104,6 +111,7 @@ constexpr int64_t dati_to_usec(dati zond) noexcept {
     return int64_t(86400) * uday + dsec - zsec;
 }
 
+// secs since Unix Epoch to Gregorian datetime
 constexpr dati usec_to_dati(int64_t usec, tzinfo zone) noexcept {
     int64_t lsec = usec + zone_to_offset(zone);
     auto [uday, dsec] = math::pydivmod<int64_t>(lsec, 86400);
@@ -113,6 +121,7 @@ constexpr dati usec_to_dati(int64_t usec, tzinfo zone) noexcept {
     return dati{y, m, d, int8_t(hh), int8_t(mm), int8_t(ss), zone};
 }
 
+// same instant in a different time zone
 constexpr dati zone_cast(dati zond, tzinfo zone) noexcept {
     int64_t usec = dati_to_usec(zond);
     return usec_to_dati(usec, zone);

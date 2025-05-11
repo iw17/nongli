@@ -48,6 +48,7 @@ constexpr T clip(T val, T min, T max) noexcept {
     return val;
 }
 
+// Python-style division
 template <class Int>
 constexpr Int pydiv(Int num, Int den) noexcept {
     Int quot = num / den, rem = num % den;
@@ -57,6 +58,7 @@ constexpr Int pydiv(Int num, Int den) noexcept {
     return quot;
 }
 
+// Python-style modulus
 template <class Int>
 constexpr Int pymod(Int num, Int den) noexcept {
     Int rem = num % den;
@@ -66,17 +68,20 @@ constexpr Int pymod(Int num, Int den) noexcept {
     return rem;
 }
 
+// quotient and remainder
 template <class Int>
-struct quotrem { // quot, rem
+struct quotrem {
     Int quot, rem;
 };
 
+// C-style division and modulus
 template <class Int>
 constexpr quotrem<Int> cdivmod(Int num, Int den) noexcept {
     Int quot = num / den, rem = num % den;
     return quotrem<Int>{quot, rem};
 }
 
+// Python-style division and modulus
 template <class Int>
 constexpr quotrem<Int> pydivmod(Int num, Int den) noexcept {
     Int quot = num / den, rem = num % den;
@@ -86,6 +91,7 @@ constexpr quotrem<Int> pydivmod(Int num, Int den) noexcept {
     return quotrem<Int>{quot, rem};
 }
 
+// fixed-point number with 32 fractional bits
 enum class fix64: int64_t {};
 
 namespace _fix {
@@ -96,29 +102,35 @@ constexpr int64_t FPART = SCALE - 1;
 
 } // namespace _data
 
+// direct `static_cast`
 constexpr fix64 fill_fix64(int64_t v) noexcept {
     return static_cast<fix64>(v);
 }
 
+// direct `static_cast`
 constexpr int64_t pour_int64(fix64 a) noexcept {
     return static_cast<int64_t>(a);
 }
 
+// casts by value it represents
 constexpr fix64 make_fix64(int64_t n) noexcept {
     return fill_fix64(n << _fix::FBITS);
 }
 
+// casts with round-off
 constexpr fix64 make_fix64(double d) noexcept {
     double dval = _fix::SCALE * d;
     int64_t ival = dval + 0.5 - (d < 0.0);
     return fill_fix64(ival);
 }
 
+// casts discarding the mantissa
 constexpr int64_t fast_int(fix64 a) noexcept {
     int64_t av = pour_int64(a);
     return av >> _fix::FBITS;
 }
 
+// casts with round-off
 constexpr int64_t safe_int(fix64 a) noexcept {
     constexpr int64_t HALF = _fix::SCALE / 2;
     int64_t av = pour_int64(a);
