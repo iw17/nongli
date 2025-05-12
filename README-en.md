@@ -9,6 +9,36 @@
 
 [Purple Mountain Observatory, CAS](http://english.pmo.cas.cn/) is responsible for calculations and promulgations of `nongli` according to Chinese standard [GB/T 33661-2017](https://std.samr.gov.cn/gb/search/gbDetailed?id=71F772D817FDD3A7E05397BE0A0AB82A). As a lunisolar calendar, `nongli` reflects seasonality and phenology, indicates moon phases and tides, and is widely used in daily life and production activities such as agriculture, fishery, flood prevention, and sailing.
 
+## Table of Contents
+
+1. [Data](#data)
+    1. [Environment Setup](#environment-setup)
+    1. [Fetching Raw Data](#fetching-raw-data)
+    1. [Rearranging Data](#rearranging-data)
+    1. [Generating Data File](#generating-data-file)
+1. [Fitting](#fitting)
+    1. [Running Test Examples](#running-test-examples)
+    1. [`Riqi`: Date in `Nongli`](#riqi-date-in-nongli)
+    1. [`Shengri`: Birthday in `Nongli`](#shengri-birthday-in-nongli)
+    1. [`Jieqi`: a.k.a. Solar Terms](#jieqi-aka-solar-terms)
+    1. [`Shihou`](#shihou)
+    1. [Zodiac Sign](#zodiac-sign)
+    1. [`Ganzhi`](#ganzhi)
+    1. [`Futian`](#futian)
+    1. [`Shujiu`](#shujiu)
+    1. [`Bazi`](#bazi)
+        1. [`Nian Zhu`](#nian-zhu)
+        1. [`Yue Zhu`](#yue-zhu)
+        1. [`Ri Zhu`](#ri-zhu)
+        1. [`Shi Zhu`](#shi-zhu)
+1. [Explanations](#explanations)
+1. [Acknowledgements](#acknowledgements)
+1. [Appendices](#appendices)
+    1. [24 `Jieqi`s](#24-jieqis)
+    1. [10 `Tiangan`s](#10-tiangans)
+    1. [12 `Dizhi`s](#12-dizhis)
+    1. [Vocabulary](#vocabulary)
+
 ## Data
 
 You can skip this section if satisfied with the data exported from 1900 to 2199 in `fit/data.hpp`.
@@ -47,7 +77,7 @@ python -u split.py
 
 Note that this repository is NOT applicable for **historical** calendars **actually** used in and before 240s A.D.
 
-### Generating C++ Data File
+### Generating Data File
 
 To export fitting arguments and residuals to `fit/data.hpp`, use the following commands:
 
@@ -83,7 +113,7 @@ In this repository, `nian` starts from one `chunjie` (p01-01) until next. The va
 
 > 1970 `nian` corresponds to the interval from Unix timestamp 3081600 sec until 33753600 sec.
 
-Here a `runyue` starts with an `r`, while a common non-`runyue` starts with a `p`.
+In this document, a `runyue` starts with an `r`, while a common non-`runyue` starts with a `p`.
 
 ### `Shengri`: Birthday in `Nongli`
 
@@ -160,7 +190,7 @@ Each `shi zhu` follows an odd hour (`zi_chu` 23, `chou_chu` 1, ... `hai_chu` 21)
 ## Explanations
 
 * Raw data are fetched from [SXWNL](https://www.sxwnl.com/super/).
-* Daylight Saving Time (DST) in China from 1985 to 1991 is not taken into account, and Chinese Standard Time is treated as equivalent to UTC+8.
+* Leap seconds are not taken into account. Neither is Daylight Saving Time (DST) in China from 1986 to 1991, and Chinese Standard Time is treated as equivalent to UTC+8.
 * The `bazi` calculations provided here are for reference only. Small errors around boundary instants may lead to biased or incorrect calculations.
 * There is no scientific evidence to support the idea that `bazi` or zodiac signs can predict one's personality or destiny. Please approach these concepts with a critical mindset; this repository does not provide any warranties regarding the accuracy or applicability of its content.
 
@@ -168,3 +198,83 @@ Each `shi zhu` follows an odd hour (`zi_chu` 23, `chou_chu` 1, ... `hai_chu` 21)
 
 * Thanks to Mr. Xu Jianwei for having developed the website [SXWNL](https://www.sxwnl.com/super/).
 * Thanks to Ms. Zhao Yuhan for providing insights of when to celebrate `shengri` on `nongli runyue`s.
+
+## Appendices
+
+### 24 `Jieqi`s
+
+| Ordinal | `Jieqi` | Meaning | Ecliptic Longitude |
+|:---:|:---:|:---:|:---:|
+| 0 | `dongzhi` | winter solstice | 270 |
+| 1 | `xiaohan` | minor cold | 285 |
+| 2 | `dahan` | major cold | 300 |
+| 3 | `lichun` | beginning of spring | 315 |
+| 4 | `yushui` | rain water | 330 |
+| 5 | `jingzhe` | awakening of insects | 345 |
+| 6 | `chunfen` | spring equinox | 0 |
+| 7 | `qingming` | pure brightness | 15 |
+| 8 | `guyu` | grain rain | 30 |
+| 9 | `lixia` | beginning of summer | 45 |
+| 10 | `xiaoman` | grain buds | 60 |
+| 11 | `mangzhong` | grain in ear | 75 |
+| 12 | `xiazhi` | summer solstice | 90 |
+| 13 | `xiaoshu` | minor heat | 105 |
+| 14 | `dashu` | major heat | 120 |
+| 15 | `liqiu` | beginning of autumn | 135 |
+| 16 | `chushu` | end of heat | 150 |
+| 17 | `bailu` | white dew | 165 |
+| 18 | `qiufen` | autumn equinox | 180 |
+| 19 | `hanlu` | cold dew | 195 |
+| 20 | `shuangjiang` | frost's descent | 210 |
+| 21 | `lidong` | beginning of winter | 225 |
+| 22 | `xiaoxue` | minor snow | 240 |
+| 23 | `daxue` | major snow | 255 |
+
+### 10 `Tiangan`s
+
+| Ordinal | `Tiangan` | Carbon Atoms |
+|:---:|:---:|:---:|
+| 0 | `jia` | 1 |
+| 1 | `yi` | 2 |
+| 2 | `bing` | 3 |
+| 3 | `ding` | 4 |
+| 4 | `wu` | 5 |
+| 5 | `ji` | 6 |
+| 6 | `geng` | 7 |
+| 7 | `xin` | 8 |
+| 8 | `ren` | 9 |
+| 9 | `gui` | 10 |
+
+Note that the ordinals in this repository are 0-base for the convenience of programming. In organic chemistry of Chinese, 10 `tiangan`s refer to 1 to 10 carbon atoms respectively, like methane (`jiawan`, $\rm{CH_4}$) and butane (`dingwan`, $\rm{C_4H_{10}}$), where `wan` means alkane in Chinese.
+
+### 12 `Dizhi`s
+
+| Ordinal | `Dizhi` | `Shengxiao` |
+|:---:|:---:|:---:|
+| 0 | `zi` | rat |
+| 1 | `chou` | ox |
+| 2 | `yin` | tiger |
+| 3 | `mao` | rabbit |
+| 4 | `chen` | dragon |
+| 5 | `si` | snake |
+| 6 | `wu` | horse |
+| 7 | `wei` | sheep |
+| 8 | `shen` | monkey |
+| 9 | `you` | rooster |
+| 10 | `xu` | dog |
+| 11 | `hai` | pig |
+
+### Vocabulary
+
+- `cjie`: Cumulative number of `jieqi`s since `dongzhi` of 1970 `sui` (falling on 1969 A.D.).
+- `cyue`: Cumulative number of `nongli yue`s since 1970-p01.
+- `date`: Gregorian date (year, month, day).
+- `dati`: Gregorian date and time (year, month, day, hour, minute, second, tzinfo).
+- `nian`: `Nongli` year, from one `chunjie` (p01-01) until next.
+- `nyue`: Cumulative number of `nongli yue`s since the `nian`'s p01, `runyue` included.
+- `riqi`: `Nongli` date, (`nian`, `ryue`, `tian`).
+- `ryue`: Value of `nongli yue` with `run` (leap); the lowest bit 1 for `runyue`, and the rest bits for ordinal.
+- `shihou`: `sui` and `jieqi`.
+- `sui`: Approximately a tropical year, from one `dongzhi` (a.k.a. winter solstice) until next.
+- `uday`: Cumulative number of days since 1970-01-01 A.D.
+- `usec`: Cumulative number of seconds since 1970-01-01 A.D. 00:00:00 UTC.
