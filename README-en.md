@@ -194,6 +194,7 @@ Each `shi zhu` follows an odd hour (`zi_chu` 23, `chou_chu` 1, ... `hai_chu` 21)
 * Leap seconds are not taken into account. Neither is Daylight Saving Time (DST) in China from 1986 to 1991, and Chinese Standard Time is treated as equivalent to UTC+8.
 * The `bazi` calculations provided here are for reference only. Small errors around boundary instants may lead to biased or incorrect calculations.
 * There is no scientific evidence to support the idea that `bazi` or zodiac signs can predict one's personality or destiny. Please approach these concepts with a critical mindset; this repository does not provide any warranties regarding the accuracy or applicability of its content.
+* Some websites generate repository documentations using AI. This repository is not responsible for any mistakes or errors AI brings.
 
 ## Acknowledgements
 
