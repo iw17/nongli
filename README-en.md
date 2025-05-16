@@ -20,7 +20,7 @@
     1. [Running Test Examples](#running-test-examples)
     1. [`Riqi`: Date in `Nongli`](#riqi-date-in-nongli)
     1. [`Shengri`: Birthday in `Nongli`](#shengri-birthday-in-nongli)
-    1. [`Jieqi`: a.k.a. Solar Terms](#jieqi-aka-solar-terms)
+    1. [`Jieqi`: a.k.a. Solar Term](#jieqi-aka-solar-term)
     1. [`Shihou`](#shihou)
     1. [Zodiac Sign](#zodiac-sign)
     1. [`Ganzhi`](#ganzhi)
@@ -35,6 +35,7 @@
 1. [Acknowledgements](#acknowledgements)
 1. [Appendices](#appendices)
     1. [24 `Jieqi`s](#24-jieqis)
+    1. [12 Zodiac Signs](#12-zodiac-signs)
     1. [10 `Tiangan`s](#10-tiangans)
     1. [12 `Dizhi`s](#12-dizhis)
     1. [Vocabulary](#vocabulary)
@@ -125,7 +126,7 @@ In this repository, `shengri` occurs when both `yue` and `tian` match the birth 
 > One born in 2004-p02-30 celebrates the `shengri` of 2023 `nian` on p02-30, and of 2024 `nian` on p02-29.\
 > One born in 2004-r02-16 celebrates the `shengri` of 2022 `nian` on p02-16, and of 2023 `nian` on r02-16.
 
-### `Jieqi`: a.k.a. Solar Terms
+### `Jieqi`: a.k.a. Solar Term
 
 In this repository, `sui` starts from one `dongzhi` (a.k.a. winter solstice) until next. The ordinal of `jieqi` being 0, 1, ... 23 refers to `dongzhi`, `xiaohan`, ... `daxue`, where those with odd ordinals are classified as `jieling` and those with even ordinals as `zhongqi`.
 
@@ -139,7 +140,7 @@ In this repository, `shihou` is a struct consisting of `sui` and `jieqi` stated 
 
 ### Zodiac Sign
 
-Zodiac signs do **NOT** belong to `nongli`, but are determined from the apparent longitude of the Sun on the ecliptic. Thus, they correspond to `jieqi`s in `nongli`. The ordinal of zodiac sign being 0, 1, ... 11 refers to Aries, Taurus, ... Pisces, respectively. Starting with Aries (`chunfen`, a.k.a. vernal equinox), each zodiac sign follows a `zhongqi` (`chunfen`, `guyu`, ... `yushui`).
+Here zodiac sign is primarily on astrology instead of astronomy. Zodiac signs, originated from ancient Babylon, **do NOT belong to `nongli`**, but are determined from the apparent longitude of the Sun on the ecliptic. Thus, they correspond to `jieqi`s in `nongli`. The ordinal of zodiac sign being 0, 1, ... 11 refers to Aries, Taurus, ... Pisces, respectively. Starting with Aries (`chunfen`, a.k.a. vernal equinox), each zodiac sign follows a `zhongqi` (`chunfen`, `guyu`, ... `yushui`).
 
 ### `Ganzhi`
 
@@ -153,7 +154,7 @@ Counting from `xiazhi` day, `toufu` (or `chufu`) starts from the 3rd `geng` day,
 
 > In Chinese, `jiu` means 9.
 
-Counting from `dongzhi` day, each `jiu` consists of 9 consecutive days. A `sui` starts with such 9 `jiu`s, totaling 81 days.
+Counting from `dongzhi` day, each `jiu` consists of 9 consecutive days. `Dongzhi` day brings such 9 `jiu`s, totaling 81 days.
 
 ### `Bazi`
 
@@ -229,6 +230,25 @@ Each `shi zhu` follows an odd hour (`zi_chu` 23, `chou_chu` 1, ... `hai_chu` 21)
 | 21 | `lidong` | beginning of winter | 225 |
 | 22 | `xiaoxue` | minor snow | 240 |
 | 23 | `daxue` | major snow | 255 |
+
+### 12 Zodiac Signs
+
+| Ordinal | Zodiac Sign | `Jieqi`s |
+|:---:|:---:|:---:|
+| 0 | aries | `chunfen` & `qingming` |
+| 1 | taurus | `guyu` & `lixia` |
+| 2 | gemini | `xiaoman` & `mangzhong` |
+| 3 | cancer | `xiazhi` & `xiaoshu` |
+| 4 | leo | `dashu` & `liqiu` |
+| 5 | virgo | `chushu` & `bailu` |
+| 6 | libra | `qiufen` & `hanlu` |
+| 7 | scorpio | `shuangjiang` & `lidong` |
+| 8 | sagittarius | `xiaoxue` & `daxue` |
+| 9 | capricorn | `dongzhi` & `xiaohan` |
+| 10 | aquarius | `dahan` & `lichun` |
+| 11 | pisces | `yushui` & `jingzhe` |
+
+Note that the astrological names above might be different from the astronomical constellation names. *Scorpio* is astronomically called *Scorpius*.
 
 ### 10 `Tiangan`s
 
