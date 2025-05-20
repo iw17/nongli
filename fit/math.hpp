@@ -9,31 +9,12 @@ namespace iw17::math {
 
 inline namespace literal {
 
-using _uintmax = unsigned long long;
-
-constexpr int16_t operator""_i16(_uintmax n) noexcept {
-    return static_cast<int16_t>(n);
-}
-
-constexpr uint16_t operator""_u16(_uintmax n) noexcept {
-    return static_cast<uint16_t>(n);
-}
-
-constexpr int32_t operator""_i32(_uintmax n) noexcept {
-    return static_cast<int32_t>(n);
-}
-
-constexpr uint32_t operator""_u32(_uintmax n) noexcept {
-    return static_cast<uint32_t>(n);
-}
-
-constexpr int64_t operator""_i64(_uintmax n) noexcept {
-    return static_cast<int64_t>(n);
-}
-
-constexpr uint64_t operator""_u64(_uintmax n) noexcept {
-    return static_cast<uint64_t>(n);
-}
+using prestd::literal::operator""_i16;
+using prestd::literal::operator""_u16;
+using prestd::literal::operator""_i32;
+using prestd::literal::operator""_u32;
+using prestd::literal::operator""_i64;
+using prestd::literal::operator""_u64;
 
 } // namespace literal
 
@@ -94,7 +75,7 @@ constexpr int64_t FBITS = 32;
 constexpr int64_t SCALE = 1_i64 << FBITS;
 constexpr int64_t FPART = SCALE - 1;
 
-} // namespace _data
+} // namespace _fix
 
 constexpr fix64 fill_fix64(int64_t v) noexcept {
     return static_cast<fix64>(v);
@@ -131,6 +112,8 @@ constexpr double show_double(fix64 a) noexcept {
 }
 
 inline namespace literal {
+
+using prestd::literal::_uintmax;
 
 using _floatmax = long double;
 

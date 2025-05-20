@@ -5,6 +5,36 @@
 
 namespace iw17::prestd {
 
+inline namespace literal {
+
+using _uintmax = unsigned long long;
+
+constexpr int16_t operator""_i16(_uintmax n) noexcept {
+    return static_cast<int16_t>(n);
+}
+
+constexpr uint16_t operator""_u16(_uintmax n) noexcept {
+    return static_cast<uint16_t>(n);
+}
+
+constexpr int32_t operator""_i32(_uintmax n) noexcept {
+    return static_cast<int32_t>(n);
+}
+
+constexpr uint32_t operator""_u32(_uintmax n) noexcept {
+    return static_cast<uint32_t>(n);
+}
+
+constexpr int64_t operator""_i64(_uintmax n) noexcept {
+    return static_cast<int64_t>(n);
+}
+
+constexpr uint64_t operator""_u64(_uintmax n) noexcept {
+    return static_cast<uint64_t>(n);
+}
+
+} // namespace literal
+
 [[noreturn]] void unreachable() {
 #ifdef _MSC_VER // MSVC
     __assume(false);
@@ -23,8 +53,6 @@ Dest> bit_cast(Src val) noexcept {
 }
 
 namespace _sct { // struct
-
-using namespace math::literal;
 
 template <uint64_t N>
 struct uint; // incomplete type
