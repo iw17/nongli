@@ -86,6 +86,12 @@ constexpr int32_t cyue_to_uday(int32_t cyue) noexcept {
     return pred + resd;
 }
 
+constexpr int8_t days_in_cyue(int32_t cyue) noexcept {
+    int32_t ud01 = cyue_to_uday(cyue);
+    int32_t next = cyue_to_uday(cyue + 1);
+    return next - ud01;
+}
+
 constexpr int32_t uday_to_cyue(int32_t uday) noexcept {
     int32_t bfit = _data::DY_COEF[1] * uday + _data::DY_COEF[2];
     int32_t pred = _data::DY_COEF[0] + (bfit >> _data::DY_BITS);
@@ -145,10 +151,7 @@ constexpr riqi next_nian(riqi rizi, int16_t step) noexcept {
     if (tian >= 30) {
         int8_t nyue = ryue_to_nyue(ryue, run);
         int32_t cy01 = nian_to_cyue(nian);
-        int32_t cyue = cy01 + nyue;
-        int32_t ud01 = cyue_to_uday(cyue);
-        int32_t nd01 = cyue_to_uday(cyue + 1);
-        tian = nd01 - ud01;
+        tian = days_in_cyue(cy01 + nyue);
     }
     return riqi{nian, ryue, tian};
 }
@@ -168,9 +171,7 @@ constexpr riqi next_cyue(riqi rizi, int32_t step) noexcept {
     run = nian_to_run(nian);
     ryue = nyue_to_ryue(nyue, run);
     if (tian >= 30) {
-        int32_t ud01 = cyue_to_uday(cyue);
-        int32_t nd01 = cyue_to_uday(cyue + 1);
-        tian = nd01 - ud01;
+        tian = days_in_cyue(cyue);
     }
     return riqi{nian, ryue, tian};
 }
@@ -179,8 +180,8 @@ constexpr riqi next_tian(riqi rizi, int32_t step) noexcept {
     if (step == 0) {
         return rizi;
     }
-    int32_t uday = riqi_to_uday(rizi) + step;
-    return uday_to_riqi(uday);
+    int32_t uday = riqi_to_uday(rizi);
+    return uday_to_riqi(uday + step);
 }
 
 enum class jieqi: int8_t {
