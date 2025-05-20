@@ -4,11 +4,11 @@
 namespace iw17::prestd {
 
 [[noreturn]] void unreachable() {
-    #ifdef _MSC_VER // MSVC
+#ifdef _MSC_VER // MSVC
     __assume(false);
-    #else // GCC or Clang
+#else // GCC or Clang
     __builtin_unreachable();
-    #endif // _MSC_VER
+#endif // _MSC_VER
 }
 
 } // namespace iw17::prestd
