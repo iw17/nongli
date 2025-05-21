@@ -53,8 +53,8 @@ jobs:
       shell: bash
       run: |
         if [ "${{ runner.os }}" == "Windows" ]; then
-          echo "build-source-dir=${{ github.workspace }}\\fit\\test" >> "$GITHUB_OUTPUT"
-          echo "build-output-dir=${{ github.workspace }}\\fit\\test\\build" >> "$GITHUB_OUTPUT"
+          echo "build-source-dir=${{ github.workspace }}\fit\test" >> "$GITHUB_OUTPUT"
+          echo "build-output-dir=${{ github.workspace }}\fit\test\build" >> "$GITHUB_OUTPUT"
         else
           echo "build-source-dir=${{ github.workspace }}/fit/test" >> "$GITHUB_OUTPUT"
           echo "build-output-dir=${{ github.workspace }}/fit/test/build" >> "$GITHUB_OUTPUT"
