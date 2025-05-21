@@ -42,24 +42,22 @@
 
 ## Data
 
-You can skip this section if satisfied with the data exported from 1900 to 2199 in `fit/data.hpp`.
+It is assumed in this section that the user's PWD is `nongli/data`. You can skip this section if satisfied with the data exported from 1900 to 2199 in `fit/data.hpp`.
 
 ### Environment Setup
 
 To set up the environment, use the following commands:
 
 ```bash
-cd data
 conda env create -f environment.yml
 conda activate Nongli
 ```
 
 ### Fetching Raw Data
 
-To fetch raw data and export them to `data/build/raw.txt`, use the following commands:
+To fetch raw data and export them to `data/build/raw.txt`, use the following command:
 
 ```bash
-cd data
 python -u spider.py
 ```
 
@@ -72,7 +70,6 @@ The ordinals of `yue`s have changed several times throughout history. For conven
 To export rearranged info on `shuo`s and `jieqi`s into `data/build`, use the following command:
 
 ```bash
-cd data
 python -u split.py
 ```
 
@@ -80,10 +77,9 @@ Note that this repository is NOT applicable for **historical** calendars **actua
 
 ### Generating Data File
 
-To export fitting arguments and residuals to `fit/data.hpp`, use the following commands:
+To export fitting arguments and residuals to `fit/data.hpp`, use the following command:
 
 ```bash
-cd data
 python -u coefs.py
 ```
 
@@ -97,15 +93,14 @@ All the fittings and equation of time (EoT) bias calculations perform integral a
 
 ### Running Test Examples
 
-To run test examples, use the following commands:
+It is assumed the user's PWD is `nongli/fit`. To run test examples, use the following commands:
 
 ```bash
-cd fit
 mkdir build
 cd build
 cmake ..
-cmake --build . --config Release
-ctest --build-config Release
+cmake --build .
+ctest
 ```
 
 ### `Riqi`: Date in `Nongli`

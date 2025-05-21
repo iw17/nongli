@@ -38,14 +38,13 @@
 
 ## 数据
 
-若导出到 `fit/data.hpp` 中 1900 至 2199 年的数据已经足够，则本节可以跳过。
+本节假设用户的当前工作目录为 `nongli/data`。若导出到 `fit/data.hpp` 中 1900 至 2199 年的数据已经足够，则本节可以跳过。
 
 ### 配置环境
 
 执行如下命令，配置环境：
 
 ```bash
-cd data
 conda env create -f environment.yml
 conda activate Nongli
 ```
@@ -55,7 +54,6 @@ conda activate Nongli
 执行如下命令，获取原始数据并导出到 `data/build/raw.txt`：
 
 ```bash
-cd data
 python -u spider.py
 ```
 
@@ -68,7 +66,6 @@ python -u spider.py
 执行如下命令，将重排后的朔与节气信息导出到 `data/build` 目录下：
 
 ```bash
-cd data
 python -u split.py
 ```
 
@@ -79,7 +76,6 @@ python -u split.py
 执行如下命令，将生成的拟合参数与残差数据导出到 `fit/data.hpp`：
 
 ```bash
-cd data
 python -u coefs.py
 ```
 
@@ -93,15 +89,14 @@ python -u coefs.py
 
 ### 运行测试样例
 
-执行如下命令，构建并运行测试样例：
+本节假设用户的当前工作目录为 `nongli/fit`。执行如下命令，构建并运行测试样例：
 
 ```bash
-cd fit
 mkdir build
 cd build
 cmake ..
-cmake --build . --config Release
-ctest --build-config Release
+cmake --build .
+ctest
 ```
 
 ### 日期
@@ -184,7 +179,7 @@ ctest --build-config Release
 
 ## 致谢
 
-* 感谢许剑伟先生及其开发的“超级万年历”网站。
+* 感谢许剑伟先生及其开发的“[超级万年历](https://www.sxwnl.com/super/)”网站。
 * 感谢赵语涵女士提供农历闰月过生日的详细规则。
 
 ## 附录
