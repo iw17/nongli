@@ -228,7 +228,7 @@ constexpr int64_t js_pred(shihou shi) noexcept {
 }
 
 constexpr int64_t js_ress(int32_t cjie) noexcept {
-    int32_t isub = (cjie - CJIE_MIN) * 3 / 2;
+    int32_t ijie = cjie - CJIE_MIN, isub = ijie + (ijie >> 1);
     auto [iarr, iloc] = math::cdivmod<uint32_t>(isub, _data::JS_PAGE);
     const uint8_t *arrs = _data::JS_ARRS[iarr];
     // 0x12, 0x34, 0x56 -> 0x412, 0x563
@@ -296,7 +296,7 @@ enum class zodiac: int8_t { // NOT part of `nongli`
 constexpr zodiac jieqi_to_zodiac(jieqi jie) noexcept {
     int8_t ijie = int8_t(jie);
     constexpr int8_t CF = int8_t(jieqi::chunfen);
-    int8_t izod = (ijie - CF + 24 * (ijie < CF)) / 2;
+    int8_t izod = (ijie - CF + 24 * (ijie < CF)) >> 1;
     return zodiac(izod);
 }
 
@@ -438,8 +438,9 @@ constexpr math::fix64 bias_eot(int64_t usec, int32_t cjie) noexcept {
     // hour angle bias from eccentricity
     math::fix64 s1ma = math::sinq(mano);
     math::fix64 s2ma = math::sinq(2 * mano);
-    math::fix64 hecc = math::fast_mul(-5 * ecco, s2ma);
-    hecc = math::fast_mul(ecco, (hecc >> 2) - 2 * s1ma);
+    math::fix64 hecc = math::fast_mul(ecco, s2ma);
+    hecc = -hecc - (hecc >> 2);
+    hecc = math::fast_mul(ecco, hecc - 2 * s1ma);
     // obliquity of the ecliptic
     constexpr math::fix64 OBLE_COEFS[] = {
         math::make_fix64(+2.60437e-1),
