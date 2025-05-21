@@ -4,10 +4,11 @@
 #include <chrono>
 #include <cinttypes>
 #include <cstdio>
+#include <cstdlib>
 
 namespace iw17 {
 
-constexpr const char *ordinal_suffix(uint32_t n) noexcept {
+constexpr const char *ordinal_suffix(uint64_t n) noexcept {
     constexpr const char *SUFFIXES[] = {
         "th", "st", "nd", "rd",
     };
@@ -19,13 +20,17 @@ constexpr const char *ordinal_suffix(uint32_t n) noexcept {
     return SUFFIXES[(n >= 1 && n <= 3) ? n : 0];
 }
 
+constexpr const char *plural_suffix(uint64_t n) noexcept {
+    constexpr const char *SUFFIXES[] = { "s", "" };
+    return SUFFIXES[n == 1];
+}
+
 struct test_suite {
 
 using str_t = const char *;
 using dur_t = std::chrono::nanoseconds;
 
-uint32_t pass;
-uint32_t fail;
+uint64_t pass, fail;
 
 test_suite() noexcept: pass(0), fail(0) {
     char buf[32] = "";
@@ -36,22 +41,24 @@ test_suite() noexcept: pass(0), fail(0) {
 #else // _MSC_VER
     std::tm *ptm = std::localtime(&now);
 #endif // _MSC_VER
-    std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", ptm);
+    std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S %Z", ptm);
     std::printf("Test suite initialized at %s\n", buf);
 }
 
 template <class Ret, class... Args>
-bool test(str_t msg, const Ret &real, Ret (*func)(Args...), Args... args) {
+bool test(str_t msg,
+    const Ret &real, Ret (*func)(Args...), Args... args
+) {
     constexpr str_t FMT[] = {
-        "[ ] %" PRIu32 "%s item passed on %s",
-        "[X] %" PRIu32 "%s item failed on %s",
+        "[ ] %" PRIu64 "%s item passed on %s",
+        "[X] %" PRIu64 "%s item failed on %s",
         ", taking %" PRId64 " ns\n",
     };
     auto t0 = std::chrono::steady_clock::now();
     bool passed = func(args...) == real;
     auto t1 = std::chrono::steady_clock::now();
     std::FILE *fp = nullptr;
-    uint32_t count = this->pass + this->fail + 1;
+    uint64_t count = this->pass + this->fail + 1;
     const char *suf = ordinal_suffix(count);
     if (passed) {
         std::fprintf((fp = stdout), FMT[0], count, suf, msg);
@@ -65,16 +72,18 @@ bool test(str_t msg, const Ret &real, Ret (*func)(Args...), Args... args) {
     return passed;
 }
 
-uint32_t complete() const noexcept {
-    uint32_t total = this->pass + this->fail;
+uint64_t complete() const noexcept {
+    uint64_t total = this->pass + this->fail;
     constexpr str_t FMT[] = {
-        "%" PRIu32 " items all passed\n",
-        "%" PRIu32 " items of %" PRIu32 " failed\n",
+        "%" PRIu64 " item%s all passed\n",
+        "%" PRIu64 " item%s of %" PRIu64 " failed\n",
     };
     if (this->fail == 0) {
-        std::printf(FMT[0], total);
+        const char *suf = plural_suffix(total);
+        std::fprintf(stdout, FMT[0], total, suf);
     } else {
-        std::printf(FMT[1], this->fail, total);
+        const char *suf = plural_suffix(this->fail);
+        std::fprintf(stderr, FMT[1], this->fail, suf, total);
     }
     return this->fail;
 }
