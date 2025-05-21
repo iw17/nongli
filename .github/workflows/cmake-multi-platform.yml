@@ -54,10 +54,10 @@ jobs:
       run: |
         if [ "${{ runner.os }}" == "Windows" ]; then
           echo "build-source-dir=${{ github.workspace }}\\fit\\test" >> "$GITHUB_OUTPUT"
-          echo "build-output-dir=${{ steps.strings.outputs.build-source-dir }}\\build" >> "$GITHUB_OUTPUT"
+          echo "build-output-dir=${{ github.workspace }}\\fit\\test\\build" >> "$GITHUB_OUTPUT"
         else
           echo "build-source-dir=${{ github.workspace }}/fit/test" >> "$GITHUB_OUTPUT"
-          echo "build-output-dir=${{ steps.strings.outputs.build-source-dir }}/build" >> "$GITHUB_OUTPUT"
+          echo "build-output-dir=${{ github.workspace }}/fit/test/build" >> "$GITHUB_OUTPUT"
         fi
 
     - name: Configure CMake
