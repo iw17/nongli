@@ -1,664 +1,459 @@
-# %% [markdown]
-# # Coefficients & Residuals
-
-# %% [markdown]
-# ## 0. Meta
-
-# %%
-import ctypes
+import argparse as ap
 import os
-import time
 import typing as tp
 
-# %%
 import numpy as np
 import pandas as pd
-from numpy.typing import NDArray
 
-# %%
-UInt8s: tp.TypeAlias = NDArray[np.uint8]
-Int64s: tp.TypeAlias = NDArray[np.int64]
-Floats: tp.TypeAlias = NDArray[np.float64]
 
-# %%
-PTR: int = ctypes.sizeof(ctypes.c_void_p)
-print(f'{PTR} bytes in a pointer')
+# Part 0: Utilities
 
-# %%
-MIN: int = +1900
-MAX: int = +2199
-BPL: int = 12 # bytes per line
-LPA: int = 315 # lines per array
 
-# %%
-t_begin: float = time.perf_counter()
-here: str = os.path.abspath('')
-csv_dir: str = os.path.join(here, 'build')
-lu_path: str = os.path.join(csv_dir, 'lunar.csv')
-so_path: str = os.path.join(csv_dir, 'solar.csv')
-hpp_dir: str = os.path.join(here, '..', 'fit')
-ex_path: str = os.path.join(hpp_dir, 'data.hpp')
+UInt8s: tp.TypeAlias = np.typing.NDArray[np.uint8]
+Int32s: tp.TypeAlias = np.typing.NDArray[np.int32]
+Int64s: tp.TypeAlias = np.typing.NDArray[np.int64]
+Floats: tp.TypeAlias = np.typing.NDArray[np.float64]
 
-# %%
+
 def int_frac(x: float) -> tuple[int, float]:
     '''
-    Splits a float to integral and fractional parts.
+    Splits into integral and fractional parts.
 
     Args:
-        x (float): input floating-point value
+        x (float): real number to split
     Returns:
-        int: the maximal integer `i <= x`
-        float: `x - i` in [0, 1)
+        int, float: int and frac parts of `x`
+
+    Examples:
+        >>> int_frac(1.5)
+        (1, 0.5)
+        >>> int_frac(-3.75)
+        (-4, 0.25)
     '''
 
-    xi, xf = divmod(x, 1)
-    return int(xi), xf
-
-# %% [markdown]
-# ## 1. Lunar
-
-# %% [markdown]
-# ### 1.0. Data
-
-# %%
-lu_df: pd.DataFrame = pd.read_csv(lu_path)
-lu_va: pd.Series = lu_df['nian'].between(MIN, MAX)
-cyue: pd.Series = lu_df['cyue']
-lu_df['uday'] = (lu_df['usec'] + 28800) // 86400
-uday: pd.Series = lu_df['uday']
-lu_df.head()
-
-# %% [markdown]
-# ### 1.1. N2G: (`nian`, `ryue`) to `cyue` to `uday`
-
-# %% [markdown]
-# #### 1.1.1. `nian` to `run`
-
-# %%
-nr_ryue: pd.Series = lu_df['ryue']
-nr_rn: pd.Series = (lu_df['ryue'] & 1).astype(np.bool)
-nr_nian: pd.Series = lu_df['nian'][nr_rn]
-nr_ry: pd.Series = nr_ryue[nr_rn] // 2
-nr_dc: dict[int, int] = dict(zip(nr_nian, nr_ry))
-print(f'{len(nr_dc)} runs')
-
-# %%
-NR_BIT, NR_IPB = 4, 2
-NR_IPL: int = NR_IPB * BPL
-nr_cnt_va: int = (MAX - MIN + 1) + (MIN - MAX - 1) % NR_IPL
-nr_ry_bt: list[int] = []
-for i in range(0, nr_cnt_va, NR_IPB):
-    bt: int = 0
-    for j in range(NR_IPB):
-        n: int = MIN + i + j
-        bt |= nr_dc.get(n, 13) << (j * NR_BIT)
-    nr_ry_bt.append(bt)
-nr_ry_np: UInt8s = np.array(nr_ry_bt, dtype=np.uint8)
-nr_ry_np = nr_ry_np.reshape((-1, BPL))
-nr_ry_ln: list[list[int]] = nr_ry_np.tolist()
-print(f'{len(nr_ry_bt)} bytes')
-
-# %% [markdown]
-# #### 1.1.2. `nian` to `cyue`: linear (1-deg) regression
-
-# %%
-ny_va: pd.Series = lu_df['ryue'] == 2
-ny_nian: pd.Series = lu_df['nian'][ny_va]
-ny_dp01: pd.Series = lu_df['cyue'][ny_va]
-ny_coef: Floats = np.polyfit(x=ny_nian, y=ny_dp01, deg=1)
-ny_c1, ny_c0 = tp.cast(list[float], ny_coef.tolist())
-print(f'cyue = {ny_c1} * nian + {ny_c0}')
-
-# %%
-ny_c1i, ny_c1f = int_frac(ny_c1)
-ny_c0i, ny_c0f = int_frac(ny_c0)
-print(ny_c1i, ny_c1f, ny_c0i, ny_c0f)
-
-# %%
-NY_BIT, NY_IPB = 1, 8
-for ny_bits in range(32):
-    ny_c0ib: int = ny_c0i
-    ny_c1bi, _ = int_frac(ny_c1f * (1 << ny_bits))
-    ny_c0bi, _ = int_frac(ny_c0f * (1 << ny_bits))
-    ny_pred: pd.Series = ny_c1i * ny_nian + ny_c0i
-    ny_bias: pd.Series = ny_c1bi * ny_nian + ny_c0bi
-    ny_pred += ny_bias // (1 << ny_bits)
-    ny_resy: pd.Series = ny_dp01 - ny_pred
-    if ny_resy.max() - ny_resy.min() < (1 << NY_BIT):
-        ny_c0ib += ny_resy.min()
-        ny_resy -= ny_resy.min()
-        print(f'cyue = {ny_c1i} * nian + {ny_c0ib}', end=' + ')
-        print(f'({ny_c1bi} * nian + {ny_c0bi} >> {ny_bits})')
-        print(f'resy in {range(ny_resy.min(), ny_resy.max() + 1)}')
-        break
-else:
-    raise ValueError('bad idea, residuals too wide')
-
-# %%
-NY_IPL: int = NY_IPB * BPL
-ny_va: pd.Series = ny_nian.between(MIN, MAX)
-ny_cnt_va: int = ny_va.sum() + 1 + (-(ny_va.sum() + 1) % NY_IPL)
-ny_resy_va: pd.Series = ny_resy[ny_nian >= MIN].iloc[:ny_cnt_va]
-ny_resy_bt: list[int] = []
-for i in range(0, len(ny_resy_va), NY_IPB):
-    bt: int = 0
-    for j, r in enumerate(ny_resy_va.iloc[i:i+NY_IPB]):
-        bt |= r << (j * NY_BIT)
-    ny_resy_bt.append(bt)
-ny_resy_np: UInt8s = np.array(ny_resy_bt, dtype=np.uint8)
-ny_resy_np = ny_resy_np.reshape((-1, BPL))
-ny_resy_ln: list[list[int]] = ny_resy_np.tolist()
-print(f'{len(ny_resy_bt)} bytes')
-
-# %% [markdown]
-# #### 1.1.3. `cyue` to `uday`: linear (1-deg) regression
-
-# %%
-yd_coef: Floats = np.polyfit(x=cyue, y=uday, deg=1)
-yd_c1, yd_c0 = tp.cast(list[float], yd_coef.tolist())
-print(f'uday = {yd_c1} * cyue + {yd_c0}')
-
-# %%
-yd_c1i, yd_c1f = int_frac(yd_c1)
-yd_c0i, yd_c0f = int_frac(yd_c0)
-print(yd_c1i, yd_c1f, yd_c0i, yd_c0f)
-
-# %%
-YD_BIT, YD_IPB = 2, 4
-for yd_bits in range(64):
-    yd_c0ib: int = yd_c0i
-    yd_c1bi, _ = int_frac(yd_c1f * (1 << yd_bits))
-    yd_c0bi, _ = int_frac(yd_c0f * (1 << yd_bits))
-    yd_pred: pd.Series = yd_c1i * cyue + yd_c0i
-    yd_bias: pd.Series = yd_c1bi * cyue + yd_c0bi
-    yd_pred += yd_bias // (1 << yd_bits)
-    yd_resd: pd.Series = uday - yd_pred
-    if yd_resd.max() - yd_resd.min() < 1 << YD_BIT:
-        yd_c0ib += yd_resd.min()
-        yd_resd -= yd_resd.min()
-        print(f'uday = {yd_c1i} * cyue + {yd_c0ib}', end=' + ')
-        print(f'({yd_c1bi} * cyue + {yd_c0bi} >> {yd_bits})')
-        print(f'resd in {range(yd_resd.min(), yd_resd.max() + 1)}')
-        break
-else:
-    raise ValueError('bad idea, residuals too wide')
-
-# %%
-YD_IPL: int = YD_IPB * BPL
-yd_cnt_va: int = lu_va.sum() + 1 + (-(lu_va.sum() + 1) % YD_IPL)
-yd_va: pd.Series = lu_df['nian'] >= MIN
-yd_resd_va: pd.Series = yd_resd[yd_va].iloc[:yd_cnt_va]
-yd_resd_bt: list[int] = []
-for i in range(0, len(yd_resd_va), YD_IPB):
-    bt: int = 0
-    for j, r in enumerate(yd_resd_va.iloc[i:i+YD_IPB]):
-        bt |= r << (j * YD_BIT)
-    yd_resd_bt.append(bt)
-yd_resd_np: UInt8s = np.array(yd_resd_bt, dtype=np.uint8)
-yd_resd_np = yd_resd_np.reshape((-1, BPL))
-yd_resd_ln: list[list[int]] = []
-for i in range(0, yd_resd_np.shape[0], LPA):
-    yd_resd_ln.append(yd_resd_np[i:i+LPA].tolist())
-print(f'{len(yd_resd_bt)} bytes')
-
-# %% [markdown]
-# ### 1.2. G2N: `uday` to `cyue` to (`nian`, `ryue`)
-
-# %% [markdown]
-# #### 1.2.1. `uday` to `cyue`: linear (1-deg) regression
-
-# %%
-dy_coef: Floats = np.polyfit(x=uday, y=cyue, deg=1)
-dy_c1, dy_c0 = tp.cast(list[float], dy_coef.tolist())
-dy_c0 += 0.5 # it is midpoint that is to be predicted
-print(f'cyue = {dy_c1} * cday + {dy_c0}')
-
-# %%
-_, dy_c1f = int_frac(dy_c1)
-dy_c0i, dy_c0f = int_frac(dy_c0)
-print(dy_c1f, dy_c0i, dy_c0f)
-
-# %%
-for dy_bits in range(64):
-    dy_c1bi, _ = int_frac(dy_c1f * (1 << dy_bits))
-    dy_c0bi, _ = int_frac(dy_c0f * (1 << dy_bits))
-    dy_bias: pd.Series = dy_c1bi * uday + dy_c0bi
-    dy_pred: pd.Series = dy_c0i + dy_bias // (1 << dy_bits)
-    if np.all(dy_pred == cyue):
-        print(f'cyue = {dy_c0i}', end=' + ')
-        print(f'({dy_c1bi} * uday + {dy_c0bi} >> {dy_bits})')
-        break
-else:
-    raise ValueError('bad idea, residuals too wide')
-
-# %% [markdown]
-# #### 1.2.2. `cyue` to `nian`: linear (1-deg) regression
-
-# %%
-yn_cyue: pd.Series = lu_df['cyue'][lu_df['ryue'] == 2]
-yn_nian: pd.Series = lu_df['nian'][lu_df['ryue'] == 2]
-yn_coef: Floats = np.polyfit(x=yn_cyue, y=yn_nian, deg=1)
-yn_c1, yn_c0 = tp.cast(list[float], yn_coef.tolist())
-yn_c0 += 0.5 # similarly, midpoints are considered
-print(f'nian = {yn_c1} * cyue + {yn_c0}')
-
-# %%
-_, yn_c1f = int_frac(yn_c1)
-yn_c0i, yn_c0f = int_frac(yn_c0)
-print(yn_c1f, yn_c0i, yn_c0f)
-
-# %%
-for yn_bits in range(64):
-    yn_c1bi, _ = int_frac(yn_c1f * (1 << yn_bits))
-    yn_c0bi, _ = int_frac(yn_c0f * (1 << yn_bits))
-    yn_bias: pd.Series = yn_c1bi * yn_cyue + yn_c0bi
-    yn_pred: pd.Series = yn_c0i + yn_bias // (1 << yn_bits)
-    if np.all(yn_pred == yn_nian):
-        print(f'nian = {yn_c0i}', end=' + ')
-        print(f'({yn_c1bi} * cyue + {yn_c0bi} >> {yn_bits})')
-        break
-else:
-    raise ValueError('bad idea, residuals too wide')
-
-# %% [markdown]
-# ## 2. Solar
-
-# %% [markdown]
-# ### 2.0. Data
-
-# %%
-so_df: pd.DataFrame = pd.read_csv(so_path)
-cjie: pd.Series = so_df['cjie']
-suis: pd.Series = so_df['sui']
-jies: pd.Series = so_df['jie']
-usec: pd.Series = so_df['usec']
-so_va: pd.Series = suis.between(MIN, MAX)
-so_df.head()
-
-# %% [markdown]
-# ### 2.1. `cjie` to `usec`: sextic (6-deg) regression
-
-# %%
-js_coef_ls: list[Floats] = []
-for jie in range(24):
-    js_gr_suis: pd.Series = suis[jies == jie]
-    js_gr_usec: pd.Series = usec[jies == jie]
-    js_coef_gr: Floats = np.polyfit(x=js_gr_suis, y=js_gr_usec, deg=6)
-    js_coef_ls.append(js_coef_gr)
-js_coef_np: Floats = np.array(js_coef_ls, dtype=np.float64)
-js_c0_np: Floats = js_coef_np[:, -1]
-js_c0m, _ = int_frac(js_c0_np.min().item())
-js_coef_np[:, -1] -= js_c0m
-js_c1_np: Floats = js_coef_np[:, -2]
-js_c1m, _ = int_frac(js_c1_np.min().item())
-js_coef_np[:, -2] -= js_c1m
-print(f'coefficient matrix shape {js_coef_np.shape}')
-
-# %%
-JS_BIT: int = 12
-js_va: pd.Series = suis >= MIN
-for js_bits in range(32):
-    js_shls: Floats = 2.0 ** (js_bits * np.arange(7)[::-1]) # type: ignore
-    js_cshl_np: Floats = js_coef_np * js_shls
-    js_ci_np: Int64s = np.round(js_cshl_np).astype(np.int64)
-    js_rest_ls: list[list[int]] = []
-    js_ress_ext_ls: list[int] = []
-    for jie in range(24):
-        js_gr_suis: pd.Series = suis[jies == jie]
-        js_gr_usec: pd.Series = usec[jies == jie]
-        js_gr_c0, *su_gr_c1r = tp.cast(list[int], js_ci_np[jie].tolist())
-        js_gr_pr: pd.Series = 0 * js_gr_suis + js_gr_c0
-        for ci in su_gr_c1r:
-            js_gr_pr = js_gr_pr * js_gr_suis // (1 << js_bits) + ci
-        js_gr_pr += js_c1m * js_gr_suis + js_c0m
-        js_gr_ress = js_gr_usec - js_gr_pr
-        js_rest_ls.append(js_gr_ress[js_va].to_list())
-        js_ress_ext_ls.append(js_gr_ress.max() - js_gr_ress.min())
-    if max(js_ress_ext_ls) < 1 << JS_BIT:
-        js_resm_ls: list[list[int]] = list(zip(*js_rest_ls)) # type: ignore
-        js_resm_np: Int64s = np.array(js_resm_ls, dtype=np.int64)
-        js_resm_min: Int64s = js_resm_np.min(axis=0)
-        js_ci_np[:, -1] += 2 * (1 << JS_BIT) + js_resm_min
-        js_c0mb: int = js_c0m - 2 * (1 << JS_BIT)
-        print(f'usec = {js_c1m} * sui + {js_c0mb} + ({js_bits} bits/deg)')
-        js_resm_np -= js_resm_min
-        print(f'ress in {range(js_resm_np.min(), js_resm_np.max() + 1)}')
-        break
-else:
-    raise ValueError('bad idea, residuals too wide')
-
-# %%
-JS_IPL: int = JS_BIT * 8 // BPL
-js_cnt_va: int = so_va.sum() + 1 + (-so_va.sum() - 1) % JS_IPL
-js_ress_va: list[int] = js_resm_np.ravel()[:js_cnt_va].tolist()
-js_ress_bt: list[int] = []
-# with JS_BIT == 12 == 1.5 bytes
-for old, new in zip(js_ress_va[0::2], js_ress_va[1::2]):
-    lo: int = old & 0xff
-    md: int = (old >> 8) | ((new & 0x0f) << 4)
-    hi: int = new >> 4
-    js_ress_bt.extend([lo, md, hi])
-js_ress_np: UInt8s = np.array(js_ress_bt, dtype=np.uint8)
-js_ress_np = js_ress_np.reshape((-1, BPL))
-js_ress_ln: list[list[int]] = []
-for i in range(0, js_ress_np.shape[0], LPA):
-    js_ress_ln.append(js_ress_np[i:i+LPA].tolist())
-print(f'{len(js_ress_bt)} bytes')
-
-# %% [markdown]
-# ### 2.2. `usec` to `cjie`: linear (1-deg) regression
-
-# %%
-sj_coef: Floats = np.polyfit(x=usec, y=cjie, deg=1)
-sj_c1, sj_c0 = tp.cast(list[float], sj_coef.tolist())
-sj_c0 += 0.5
-print(f'cjie = {sj_c1} * usec + {sj_c0}')
-
-# %%
-_, sj_c1f = int_frac(sj_c1)
-sj_c0i, sj_c0f = int_frac(sj_c0)
-print(sj_c1f, sj_c0i, sj_c0f)
-
-# %%
-for sj_bits in range(32):
-    sj_c1bi, _ = int_frac(sj_c1f * (1 << (2 * sj_bits)))
-    sj_c0bi, _ = int_frac(sj_c0f * (1 << sj_bits))
-    sj_pred: pd.Series = (sj_c1bi * usec) // (1 << sj_bits)
-    sj_pred = (sj_pred + sj_c0bi) // (1 << sj_bits) + sj_c0i
-    if np.all(sj_pred == cjie):
-        print(f'cjie = {sj_c0i}', end=' + ')
-        print(f'(({sj_c1bi} * usec >> {sj_bits})', end=' + ')
-        print(f'{sj_c0bi} >> {sj_bits})')
-        break
-else:
-    raise ValueError('bad idea, residuals too wide')
-
-# %% [markdown]
-# ## 3. Export
-
-# %% [markdown]
-# ### 3.0. Bounds & Formats
-
-# %%
-VPL: int = 5 # variables per line
-ICX: str = 'inline constexpr'
-os.makedirs(hpp_dir, exist_ok=True)
-with open(ex_path, 'w') as ex_hpp:
-    pass # clear `data.cpp` if it exists
-ex_fmt_bt: str = '   ' + BPL * ' 0x{:02x},' + '\n'
-print(ex_fmt_bt[:60])
-
-# %%
-with open(ex_path, 'a') as ex_hpp:
-    ex_hpp.write('#ifndef IW_DATA_HPP\n')
-    ex_hpp.write('#define IW_DATA_HPP 20250203L\n\n')
-    ex_hpp.write('#include <cstdint>\n\n')
-    ex_hpp.write('namespace iw17::_data {\n\n')
-    ex_hpp.write(f'{ICX} int16_t NIAN_MIN = {MIN:+d};\n')
-    ex_hpp.write(f'{ICX} int16_t NIAN_MAX = {MAX:+d};\n\n')
-    ex_hpp.write(f'{ICX} int16_t SUI_MIN = {MIN:+d};\n')
-    ex_hpp.write(f'{ICX} int16_t SUI_MAX = {MAX:+d};\n\n')
-    ex_hpp.write(f'{ICX} int16_t YEAR_MIN = {MIN:+d};\n')
-    ex_hpp.write(f'{ICX} int16_t YEAR_MAX = {MAX:+d};\n\n')
-    ex_cyue_min: int = cyue[lu_va].min()
-    ex_cyue_max: int = cyue[lu_va].max()
-    ex_cyue_num: int = ex_cyue_max - ex_cyue_min + 1
-    ex_hpp.write(f'{ICX} int32_t CYUE_MIN = {ex_cyue_min:+d};\n')
-    ex_hpp.write(f'{ICX} int32_t CYUE_MAX = {ex_cyue_max:+d};\n\n')
-    ex_cjie_min: int = cjie[so_va].min()
-    ex_cjie_max: int = cjie[so_va].max()
-    ex_cjie_num: int = ex_cjie_max - ex_cjie_min + 1
-    ex_hpp.write(f'{ICX} int32_t CJIE_MIN = {ex_cjie_min:+d};\n')
-    ex_hpp.write(f'{ICX} int32_t CJIE_MAX = {ex_cjie_max:+d};\n\n')
-ex_bt_meta: int = 2 * 6 + 4 * 4
-print(f'{ex_bt_meta} bytes for bounds')
-
-# %% [markdown]
-# ### 3.1. Lunar
-
-# %% [markdown]
-# #### 3.1.0. Formats
-
-# %%
-ex_fl_hi: str = ', '.join(4 * ['{:d}'])
-ex_fl_wl: list[int] = np.char.str_len(np.array([
-    [dy_c0i, dy_c1bi, dy_c0bi],
-    [yn_c0i, yn_c1bi, yn_c0bi],
-], dtype=str)).max(axis=0).tolist()
-ex_fl_lo: str = ', '.join(3 * ['{:d}'])
-print(ex_fl_hi)
-print(ex_fl_lo)
-
-# %% [markdown]
-# #### 3.1.1. `nian` to `run`
-
-# %%
-with open(ex_path, 'a') as ex_hpp:
-    ex_hpp.write(f'{ICX} uint8_t NR_RUNS[] = {{\n')
-    for ex_nr_ln in nr_ry_ln:
-        ex_hpp.write(ex_fmt_bt.format(*ex_nr_ln))
-    ex_hpp.write('};\n\n')
-ex_bt_nr: int = 1 * len(nr_ry_bt)
-print(f'{ex_bt_nr} bytes for NR runs')
-
-# %% [markdown]
-# #### 3.1.2. `nian` to `cyue`
-
-# %%
-with open(ex_path, 'a') as ex_hpp:
-    ex_hpp.write(f'{ICX} int64_t NY_BITS = {ny_bits};\n\n')
-ex_bt_ny_bits: int = 8 # 1 saves nothing due to alignment
-print(f'{ex_bt_ny_bits} bytes for NY bits')
-
-# %%
-with open(ex_path, 'a') as ex_hpp:
-    ex_hpp.write(f'{ICX} int64_t NY_COEF[] = {{ ')
-    ex_hpp.write(ex_fl_hi.format(ny_c1i, ny_c0ib, ny_c1bi, ny_c0bi))
-    ex_hpp.write(' };\n\n')
-ex_bt_ny_coef: int = 8 * 4
-print(f'{ex_bt_ny_coef} bytes for NY coef')
-
-# %%
-with open(ex_path, 'a') as ex_hpp:
-    ex_hpp.write(f'{ICX} uint8_t NY_RESY[] = {{\n')
-    for ex_ny_ln in ny_resy_ln:
-        ex_hpp.write(ex_fmt_bt.format(*ex_ny_ln))
-    ex_hpp.write('};\n\n')
-ex_bt_ny_resy: int = 1 * len(ny_resy_bt)
-print(f'{ex_bt_ny_resy} bytes for NY resd')
-
-# %% [markdown]
-# #### 3.1.3. `cyue` to `uday`
-
-# %%
-with open(ex_path, 'a') as ex_hpp:
-    ex_hpp.write(f'{ICX} int64_t YD_BITS = {yd_bits};\n\n')
-ex_bt_yd_bits: int = 8
-print(f'{ex_bt_yd_bits} bytes for YD bits')
-
-# %%
-with open(ex_path, 'a') as ex_hpp:
-    ex_hpp.write(f'{ICX} int64_t YD_COEF[] = {{ ')
-    ex_hpp.write(ex_fl_hi.format(yd_c1i, yd_c0ib, yd_c1bi, yd_c0bi))
-    ex_hpp.write(' };\n\n')
-ex_bt_yd_coef: int = 8 * 4
-print(f'{ex_bt_yd_coef} bytes for YD coef')
-
-# %%
-with open(ex_path, 'a') as ex_hpp:
-    ex_yd_na: int = len(yd_resd_ln)
-    ex_yd_nw: int = len(str(ex_yd_na))
-    ex_yd_ns: list[str] = [
-        f'YD_RESD_{i:0{ex_yd_nw}d}' for i in range(ex_yd_na)
-    ]
-    ex_hpp.write(f'{ICX} int64_t YD_PAGE = {BPL * LPA};\n\n')
-    for ex_yd_nv, ex_yd_ap in zip(ex_yd_ns, yd_resd_ln):
-        ex_hpp.write(f'{ICX} uint8_t {ex_yd_nv}[] = {{\n')
-        for ex_yd_ln in ex_yd_ap:
-            ex_hpp.write(ex_fmt_bt.format(*ex_yd_ln)) # type: ignore
-        ex_hpp.write('};\n\n')
-    ex_hpp.write(f'{ICX} const uint8_t *YD_ARRD[] = {{\n')
-    for i in range(0, ex_yd_na, VPL):
-        ex_yd_al: list[str] = ex_yd_ns[i:i+VPL]
-        ex_yd_ll: int = len(ex_yd_al)
-        ex_yd_fmt: str = '   ' + ex_yd_ll * ' {},' + '\n'
-        ex_hpp.write(ex_yd_fmt.format(*ex_yd_al))
-    ex_hpp.write('};\n\n')
-ex_bt_yd_resd: int = 8 + 1 * len(yd_resd_bt) + PTR * ex_yd_na
-print(f'{ex_bt_yd_resd} bytes for YD resd')
-
-# %% [markdown]
-# #### 3.1.4. `uday` to `cyue`
-
-# %%
-with open(ex_path, 'a') as ex_hpp:
-    ex_hpp.write(f'{ICX} int64_t DY_BITS = {dy_bits};\n\n')
-ex_bt_dy_bits: int = 8
-print(f'{ex_bt_dy_bits} bytes for DY bits')
-
-# %%
-with open(ex_path, 'a') as ex_hpp:
-    ex_hpp.write(f'{ICX} int64_t DY_COEF[] = {{ ')
-    ex_hpp.write(ex_fl_lo.format(dy_c0i, dy_c1bi, dy_c0bi))
-    ex_hpp.write(' };\n\n')
-ex_bt_dy_coef: int = 8 * 3
-print(f'{ex_bt_dy_coef} bytes for DY coef')
-
-# %% [markdown]
-# #### 3.1.5. `cyue` to `nian`
-
-# %%
-with open(ex_path, 'a') as ex_hpp:
-    ex_hpp.write(f'{ICX} int64_t YN_BITS = {yn_bits};\n\n')
-ex_bt_yn_bits: int = 8
-print(f'{ex_bt_yn_bits} bytes for YN bits')
-
-# %%
-with open(ex_path, 'a') as ex_hpp:
-    ex_hpp.write(f'{ICX} int64_t YN_COEF[] = {{ ')
-    ex_hpp.write(ex_fl_lo.format(yn_c0i, yn_c1bi, yn_c0bi))
-    ex_hpp.write(' };\n\n')
-ex_bt_yn_coef: int = 8 * 3
-print(f'{ex_bt_yn_coef} bytes for YN coef')
-
-# %% [markdown]
-# ### 3.2. Solar
-
-# %% [markdown]
-# #### 3.2.0. Formats
-
-# %%
-ex_fs_wh: Int64s = np.char.str_len(js_ci_np.astype(str)).max(axis=0)
-ex_fs_hi: str = ', '.join(7 * ['{{:{}d}}']).format(*ex_fs_wh)
-ex_fs_lo: str = ', '.join(3 * ['{:d}'])
-print(ex_fs_hi)
-print(ex_fs_lo)
-
-# %% [markdown]
-# #### 3.2.1. `sui` to `usec`
-
-# %%
-with open(ex_path, 'a') as ex_hpp:
-    ex_hpp.write(f'{ICX} int64_t JS_BITS = {js_bits};\n\n')
-ex_bt_js_bits: int = 8
-print(f'{ex_bt_js_bits} bytes for JS bits')
-
-# %%
-with open(ex_path, 'a') as ex_hpp:
-    ex_hpp.write(f'{ICX} int64_t JS_CLIN[] = ')
-    ex_hpp.write(f'{{ {js_c1m}, {js_c0mb} }};\n\n')
-ex_bt_js_clin: int = 8 * 2
-print(f'{ex_bt_js_clin} bytes for JS clin')
-
-# %%
-with open(ex_path, 'a') as ex_hpp:
-    ex_hpp.write(f'{ICX} int64_t JS_COEF[][7] = {{\n')
-    for ex_js_ci in tp.cast(list[int], js_ci_np.tolist()):
-        ex_js_ci_ln: str = ex_fs_hi.format(*ex_js_ci) # type: ignore
-        ex_hpp.write(f'    {{ {ex_js_ci_ln} }},\n')
-    ex_hpp.write('};\n\n')
-ex_bt_js_coef: int = 8 * 7 * 24
-print(f'{ex_bt_js_coef} bytes for JS coef')
-
-# %%
-with open(ex_path, 'a') as ex_hpp:
-    ex_js_na: int = len(js_ress_ln)
-    ex_js_nw: int = len(str(ex_js_na))
-    ex_js_ns: list[str] = [
-        f'JS_RESS_{i:0{ex_js_nw}d}' for i in range(ex_js_na)
-    ]
-    ex_hpp.write(f'{ICX} int64_t JS_PAGE = {BPL * LPA};\n\n')
-    for ex_js_nv, ex_js_ap in zip(ex_js_ns, js_ress_ln):
-        ex_hpp.write(f'{ICX} uint8_t {ex_js_nv}[] = {{\n')
-        for ex_js_ln in ex_js_ap:
-            ex_hpp.write(ex_fmt_bt.format(*ex_js_ln)) # type: ignore
-        ex_hpp.write('};\n\n')
-    ex_hpp.write(f'{ICX} const uint8_t *JS_ARRS[] = {{\n')
-    for i in range(0, ex_js_na, VPL):
-        ex_js_al: list[str] = ex_js_ns[i:i+VPL]
-        ex_js_ll: int = len(ex_js_al)
-        ex_js_fmt: str = '   ' + ex_js_ll * ' {},' + '\n'
-        ex_hpp.write(ex_js_fmt.format(*ex_js_al))
-    ex_hpp.write('};\n\n')
-ex_bt_js_resd: int = 8 + 1 * len(js_ress_bt) + PTR * ex_js_na
-print(f'{ex_bt_js_resd} bytes for JS ress')
-
-# %% [markdown]
-# #### 3.2.2. `usec` to `cjie`
-
-# %%
-with open(ex_path, 'a') as ex_hpp:
-    ex_hpp.write(f'{ICX} int64_t SJ_BITS = {sj_bits};\n\n')
-ex_bt_sj_bits: int = 8
-print(f'{ex_bt_sj_bits} bytes for SJ bits')
-
-# %%
-with open(ex_path, 'a') as ex_hpp:
-    ex_hpp.write(f'{ICX} int64_t SJ_COEF[] = {{ ')
-    ex_hpp.write(ex_fs_lo.format(sj_c0i, sj_c1bi, sj_c0bi))
-    ex_hpp.write(' };\n\n')
-ex_bt_sj_coef: int = 8 * 3
-print(f'{ex_bt_sj_coef} bytes for SJ coef')
-
-# %% [markdown]
-# ## 4. Statistics
-
-# %%
-ex_bt: int = sum([eval(v) for v in dir() if v.startswith('ex_bt_')])
-with open(ex_path, 'a') as ex_hpp:
-    ex_hpp.write('} // namespace iw17::_data, ')
-    ex_hpp.write(f'{ex_bt} bytes in total\n\n')
-    ex_hpp.write('#endif // IW_DATA_HPP\n\n')
-print(f'{ex_bt} bytes exported as data')
-t_end: float = time.perf_counter()
-sec_taken: float = t_end - t_begin
-print(f'{sec_taken:.3f} s taken for data generation')
-
-# %% [markdown]
-# ## 5. Vocabulary
-
-# %% [markdown]
-# Lunar:
-# * NR: `nian` to `run`
-# * NY: `nian` to `cyue`
-# * YD: `cyue` to `uday`
-# * DY: `uday` to `cyue`
-# * YN: `cyue` to `nian`
-# 
-# Solar:
-# * JS: `cjie` to `usec`
-# * SJ: `usec` to `cjie`
-# 
-# P.S.
-# * A new `nongli` day comes at 00:00:00 UTC+8,
-#   and DST from 1985 to 1991 is taken out of account.
-# * 1970 `nian` comes on `chunjie` (p01-01), while
-#   1970 `sui` comes at `dongzhi` (1969-12-22 08:43:41 UTC+8).
-# * The prefix `u` in `uday` and `usec` means Unix,
-#   counting from Unix Epoch (1970-01-01 00:00:00 UTC).
-# * The prefix `c` in `cyue` and `cjie` means cumulative,
-#   counting from 1970-p01 and 1970 `dongzhi` resp.
-# * `Nongli` has both lunar and solar. NEVER refer to
-#   CHINESE new year `chunjie` as LUNAR new year!
-
-
+    return int(x // 1), x % 1
+
+
+class Config(tp.NamedTuple):
+    '''
+    Configurations for time bounds to export.
+
+    Assumptions:
+        * `upper` is not less than `lower`.
+
+    Attributes:
+        lower (int): minimal `nian`, `sui` and year
+        upper (int): maximal `nian`, `sui` and year
+        tzinfo (float): offset hours eastward from UTC
+    '''
+
+    lower: int
+    upper: int
+    tzinfo: float
+
+
+def load_config() -> Config:
+    '''
+    Loads configurations from command-line.
+
+    Returns:
+        Config: bounds and tzinfo input from command-line
+    '''
+
+    parser: ap.ArgumentParser = ap.ArgumentParser()
+    kw_min: dict[str, tp.Any] = {
+        'type': int,
+        'required': True,
+        'help': 'lower bound of nian, sui, year',
+        'metavar': 'MIN',
+    }
+    kw_max: dict[str, tp.Any] = {
+        'type': int,
+        'required': True,
+        'help': 'upper bound of nian, sui, year',
+        'metavar': 'MAX',
+    }
+    kw_tz: dict[str, tp.Any] = {
+        'type': int,
+        'default': 8.0,
+        'help': 'offset hours eastward from UTC',
+        'metavar': 'TZ',
+    }
+    parser.add_argument('-l', '--lower', **kw_min)
+    parser.add_argument('-u', '--upper', **kw_max)
+    parser.add_argument('-t', '--tzinfo', **kw_tz)
+    args: ap.Namespace = parser.parse_args()
+    return Config(args.lower, args.upper, args.tzinfo)
+
+
+class Format:
+    '''
+    Constants of formatting exported data.
+
+    Attributes:
+        BPL (int): bytes per line
+        LPA (int): lines per array for huge tables
+        XX_BIT (int): bits per item of (NR, NY, YD, JS)
+        XX_IPB (int): items per byte of (NR, NY, YD)
+        JS_IPL (int): items per line of `cjie_to_usec`
+    '''
+
+    BPL: int = 12
+    LPA: int = 3780
+    NR_BIT, NR_IPB = 4, 2 # `nian` to `run`
+    NY_BIT, NY_IPB = 1, 8 # `nian` to `cyue`
+    YD_BIT, YD_IPB = 2, 4 # `cyue` to `uday`
+    JS_BIT: int = 12 # `cjie` to `usec`
+    JS_IPL: int = (BPL * 8) // JS_BIT
+
+
+def vals_to_colls(vals: list[int], bit: int, ipc: int) -> list[int]:
+    '''
+    Converts a list of integers to collections (e.g. bytes).
+
+    Assumptions:
+        * All items in `vals` are non-negative.
+        * No overflows, especially `bit * ipc < 64`.
+
+    Args:
+        vals (list[int]): integer values to convert
+        bit (int): how many bits a value item occupies
+        ipc (int): how many items a collection contains
+    Returns:
+        list[int]: list of small integers for collections
+    '''
+
+    UInt64s = np.typing.NDArray[np.uint64]
+    arr: UInt64s = np.array(vals, dtype=np.uint64)
+    arr = arr.reshape((-1, ipc))
+    exp: UInt64s = bit * np.arange(ipc, dtype=np.uint64)
+    sums: UInt64s = np.sum(arr << exp, axis=1)
+    return tp.cast(list[int], sums.tolist())
+
+
+class Data(tp.NamedTuple):
+    '''
+    Lunar and solar data preprocessed into CSV.
+
+    Attributes:
+        lunar (pd.DataFrame): info on `cyue`s and `shuo`s
+        solar (pd.DataFrame): info on `sui`s and `jieqi`s
+    '''
+
+    lunar: pd.DataFrame
+    solar: pd.DataFrame
+
+
+def load_data(csv_dir: str, conf: Config) -> Data:
+    '''
+    Loads lunar and solar data in bounds from CSVs.
+
+    Args:
+        csv_dir (str): directory containing CSV data files
+        conf (Config): configurations of time bounds
+    Returns:
+        Data: lunar and solar data loaded from CSVs
+    '''
+
+    lo, hi, tz = conf
+    # lunar: `nian` and `cyue`
+    lu_path: str = os.path.join(csv_dir, 'lunar.csv')
+    lu: pd.DataFrame = pd.read_csv(lu_path)
+    lu_fi: pd.Series = lu['nian'].between(lo, hi)
+    # aligns `nian` to whole line
+    nian_no: int = hi - lo + 1
+    NIAN_MOD: int = Format.NY_IPB * Format.BPL
+    nian_no += NIAN_MOD - nian_no % NIAN_MOD
+    nian_hi: int = lo + nian_no - 1
+    lu_fi[lu['nian'].between(lo, nian_hi)] = True
+    # aligns `cyue` to whole line
+    cyue_lo: int = int(lu['cyue'][lu_fi].min())
+    cyue_no: int = int(lu_fi.sum())
+    CYUE_MOD: int = Format.YD_IPB * Format.BPL
+    cyue_no += CYUE_MOD - cyue_no % CYUE_MOD
+    cyue_hi: int = cyue_lo + cyue_no - 1
+    lu_fi[lu['cyue'].between(cyue_lo, cyue_hi)] = True
+    # aligns the last `nian`
+    nian_hi = int(lu['nian'][lu_fi].max())
+    lu_fi[lu['nian'] == nian_hi] = True
+    lu = lu[lu_fi]
+    # adds a new column `uday`
+    SECS_PER_DAY: int = 86400
+    tz_sec, _ = int_frac(tz * SECS_PER_DAY)
+    lu['uday'] = (lu['usec'] + tz_sec) // SECS_PER_DAY
+    # solar: `sui` and `jieqi`
+    so_path: str = os.path.join(csv_dir, 'solar.csv')
+    so: pd.DataFrame = pd.read_csv(so_path)
+    so = so[so['sui'].between(lo, hi + 1)]
+    return Data(lu, so)
+
+
+# Part 1: Lunar Data on `riqi`
+
+
+## Section 1.1. (`nian`, `ryue`) to `cyue` to `uday`
+
+
+### 1.1.0. Preparations
+
+
+class CoefsLevel(tp.NamedTuple):
+    '''
+    Fit form: `y = k0 * x + b0 + (k1 * x + b1 >> nb)`.
+
+    Attributes:
+        k0 (int): major linear
+        b0 (int): major constant
+        k1 (int): minor liear
+        b1 (int): minor constant
+        nb (int): bits shifted
+    '''
+
+    k0: int
+    b0: int
+    k1: int
+    b1: int
+    nb: int
+
+    def predict(self: tp.Self, xs: Int32s) -> Int32s:
+        '''
+        Applies the fit form and coefficients.
+
+        Assumptions:
+            No overflows.
+
+        Args:
+            xs (Int32s): data input to fit
+        Returns:
+            Int32s: predicted values fitted
+        '''
+
+        major: Int32s = self.k0 * xs + self.b0
+        minor: Int32s = self.k1 * xs + self.b1
+        return major + (minor >> self.nb)
+
+
+LevelCR: tp.TypeAlias = tuple[CoefsLevel, list[int]]
+
+
+def level_fit(xs: pd.Series, ys: pd.Series, bit: int) -> LevelCR:
+    '''
+    Fits `ys` from `xs` like `CoefsLevel`.
+
+    Args:
+        xs (pd.Series): data input to fit
+        ys (pd.Series): expected output of data
+        bit (int): max bit length of one residual
+    Returns:
+        LevelCR: coefficients and residuals
+    Raises:
+        ValueError: if no feasible fit was found
+    '''
+
+    # fits like `y = k * x + b`
+    kb: Floats = np.polyfit(xs, ys, deg=1)
+    (k0, kf), (b0, bf) = map(int_frac, kb.tolist())
+    # finds least feasible bits
+    for nb in range(32):
+        k1, _ = int_frac(kf * (1 << nb))
+        b1, _ = int_frac(bf * (1 << nb))
+        coefs: CoefsLevel = CoefsLevel(k0, b0, k1, b1, nb)
+        xa: Int32s = xs.to_numpy().astype(np.int32)
+        rs: pd.Series = ys - coefs.predict(xa)
+        rmin: int = int(rs.min())
+        coefs = CoefsLevel(k0, b0 + rmin, k1, b1, nb)
+        if rs.max() - rmin < (1 << bit):
+            return coefs, (rs - rmin).tolist()
+    else:
+        raise ValueError('bad idea, residuals too wide')
+
+
+### 1.1.1. NR: `nian` to `run`: direct export
+
+
+def nr_runs(lu: pd.DataFrame) -> list[int]:
+    '''
+    Gets `runyue` values of `nian`s in bounds.
+
+    Args:
+        lu (pd.DataFrame): lunar data in bounds
+    Returns:
+        list[int]: `run`s of `nian`s, 13 for `run`-free
+    '''
+
+    lo, hi = lu['nian'].min(), lu['nian'].max()
+    num: int = int(hi) - int(lo) + 1
+    NIAN_MOD: int = Format.NR_IPB * Format.BPL
+    hi = lo + (num // NIAN_MOD) * NIAN_MOD - 1
+    lu = lu[(lu['ryue'] & 1 != 0) & lu['nian'].between(lo, hi)]
+    nians, ryues = lu['nian'], lu['ryue'] // 2
+    rmap: dict[int, int] = dict(zip(nians, ryues))
+    return [rmap.get(n, 13) for n in range(lo, hi + 1)]
+
+
+def nr_bytes(runs: list[int]) -> list[int]:
+    '''
+    Bitwise converts `runyue` values to bytes.
+
+    Args:
+        runs (list[int]): `run`s of `nian`s, or 13
+    Returns:
+        list[int]: bytes converted from `runyue`s
+    '''
+
+    return vals_to_colls(runs, Format.NR_BIT, Format.NR_IPB)
+
+
+### 1.1.2. NY: `nian` to `cyue`: linear (1-deg) regression
+
+
+def ny_fit(lu: pd.DataFrame) -> LevelCR:
+    '''
+    Fits `nian_to_cyue` and gets residuals in `cyue`.
+
+    Args:
+        lu (pd.DataFrame): lunar data in bounds
+    Returns:
+        LevelCR: coefficients and residuals
+    Raises:
+        ValueError: if no feasible fit was found
+    '''
+
+    lo, hi = lu['nian'].min(), lu['nian'].max()
+    num: int = int(hi) - int(lo) + 1
+    NIAN_MOD: int = Format.NY_IPB * Format.BPL
+    hi = lo + (num // NIAN_MOD) * NIAN_MOD - 1
+    lu = lu[(lu['ryue'] == 2) & lu['nian'].between(lo, hi)]
+    return level_fit(lu['nian'], lu['cyue'], Format.NY_BIT)
+
+
+def ny_bytes(resy: list[int]) -> list[int]:
+    '''
+    Bitwise converts `nian_to_cyue` residuals to bytes.
+
+    Args:
+        resy (list[int]): NY residuals in `cyue`
+    Returns:
+        list[int]: bytes converted from NY residuals
+    '''
+
+    return vals_to_colls(resy, Format.NY_BIT, Format.NY_IPB)
+
+
+### 1.1.3. YD: `cyue` to `uday`: linear (1-deg) regression
+
+
+def yd_fit(lu: pd.DataFrame) -> LevelCR:
+    '''
+    Fits `cyue_to_uday` and gets residuals in uday.
+
+    Args:
+        lu (pd.DataFrame): lunar data in bounds
+    Returns:
+        LevelCR: coefficients and residuals
+    Raises:
+        ValueError: if no feasible fit was found
+    '''
+
+    lo, hi = lu['cyue'].min(), lu['cyue'].max()
+    num: int = int(hi) - int(lo) + 1
+    CYUE_NUM: int = Format.YD_IPB * Format.BPL
+    hi = lo + (num // CYUE_NUM) * CYUE_NUM - 1
+    lu = lu[lu['cyue'].between(lo, hi)]
+    return level_fit(lu['cyue'], lu['uday'], Format.YD_BIT)
+
+
+def yd_bytes(resd: list[int]) -> list[int]:
+    '''
+    Bitwise converts `cyue_to_uday` residuals to bytes.
+
+    Args:
+        resd (list[int]): YD residuals in `uday`
+    Returns:
+        list[int]: bytes converted from YD residuals
+    '''
+
+    return vals_to_colls(resd, Format.YD_BIT, Format.YD_IPB)
+
+
+## Section 1.2. `uday` to `cyue` to `nian`, no residuals
+
+
+### 1.2.0. Preparations
+
+
+class CoefsExact(tp.NamedTuple):
+    '''
+    Fit form: `y = k * x + b >> n`.
+    '''
+
+    k: int
+    b: int
+    n: int
+
+    def predict(self: tp.Self, xs: Int32s) -> Int32s:
+        '''
+        Applies the fit form and coefficients.
+
+        Assumptions:
+            No overflows.
+
+        Args:
+            xs (Int32s): data input to fit
+        Returns:
+            Int32s: predicted values fitted
+        '''
+
+        k, b, n = self
+        return (k * xs + b) >> n
+
+
+def exact_fit(xs: pd.Series, ys: pd.Series) -> CoefsExact:
+    '''
+    Fits `ys` from `xs` like `CoefsExact`.
+
+    Args:
+        xs (pd.Series): data input to fit
+        ys (pd.Series): expected output of data
+    Returns:
+        CoefsExact: coefficients for fitting
+    Raises:
+        ValueError: if no feasible fit was found
+
+    Notes:
+        * Residuals are NOT allowed here.
+    '''
+
+    # fits like `y = k * x + b`
+    k, b = np.polyfit(xs, ys, deg=1)
+    # finds least feasible bits
+    for nb in range(32):
+        k1, _ = int_frac(float(k) * (1 << nb))
+        b1, _ = int_frac(float(b) * (1 << nb))
+        coefs: CoefsExact = CoefsExact(k1, b1, nb)
+        xa: Int32s = xs.to_numpy().astype(np.int32)
+        if np.all(ys == coefs.predict(xa)):
+            return coefs
+    else:
+        raise ValueError('bad idea, residuals too wide')
+
+
+### 1.2.1. DY: `uday` to `cyue`
+### TODO: complete it some daytime; sleepy
+
+
+def main() -> None:
+    conf: Config = load_config()
+    here: str = os.path.dirname(__file__)
+    csv_dir: str = os.path.join(here, 'build')
+    lu, so = load_data(csv_dir, conf)
+    nr_rs: list[int] = nr_runs(lu)
+    nr_bt: list[int] = nr_bytes(nr_rs)
+    ny_cf, ny_ry = ny_fit(lu)
+    ny_bt: list[int] = ny_bytes(ny_ry)
+    yd_cf, yd_rd = yd_fit(lu)
+    yd_bt: list[int] = yd_bytes(yd_rd)
+
+
+if __name__ == '__main__':
+    main()
