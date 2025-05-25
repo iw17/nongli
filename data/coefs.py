@@ -384,12 +384,19 @@ def yd_bytes(resd: list[int]) -> list[int]:
 
 class CoefsExact(tp.NamedTuple):
     '''
-    Fit form: `y = k * x + b >> n`.
+    Fit form: `y = b0 + (k1 * x + b1 >> nb)`.
+
+    Attributes:
+        b0 (int): major constant
+        k1 (int): minor linear
+        b1 (int): minor constant
+        nb (int): bits shifted
     '''
 
-    k: int
-    b: int
-    n: int
+    b0: int
+    k1: int
+    b1: int
+    nb: int
 
     def predict(self: tp.Self, xs: Int32s) -> Int32s:
         '''
@@ -404,8 +411,8 @@ class CoefsExact(tp.NamedTuple):
             Int32s: predicted values fitted
         '''
 
-        k, b, n = self
-        return (k * xs + b) >> n
+        b0, k1, b1, nb = self
+        return b0 + (k1 * xs + b1 >> nb)
 
 
 def exact_fit(xs: pd.Series, ys: pd.Series) -> CoefsExact:
@@ -426,11 +433,12 @@ def exact_fit(xs: pd.Series, ys: pd.Series) -> CoefsExact:
 
     # fits like `y = k * x + b`
     k, b = np.polyfit(xs, ys, deg=1)
+    b0, bf = int_frac(float(b))
     # finds least feasible bits
     for nb in range(32):
         k1, _ = int_frac(float(k) * (1 << nb))
-        b1, _ = int_frac(float(b) * (1 << nb))
-        coefs: CoefsExact = CoefsExact(k1, b1, nb)
+        b1, _ = int_frac(bf * (1 << nb))
+        coefs: CoefsExact = CoefsExact(b0, k1, b1, nb)
         xa: Int32s = xs.to_numpy().astype(np.int32)
         if np.all(ys == coefs.predict(xa)):
             return coefs
