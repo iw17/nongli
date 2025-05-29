@@ -215,7 +215,7 @@ class CoefsLevel(tp.NamedTuple):
     b1: int
     nb: int
 
-    def predict(self: tp.Self, xs: Int32s) -> Int32s:
+    def predict(self: tp.Self, xs: Int64s) -> Int32s:
         '''
         Applies the fit form and coefficients.
 
@@ -228,8 +228,8 @@ class CoefsLevel(tp.NamedTuple):
             Int32s: predicted values fitted
         '''
 
-        major: Int32s = self.k0 * xs + self.b0
-        minor: Int32s = self.k1 * xs + self.b1
+        major: Int64s = self.k0 * xs + self.b0
+        minor: Int64s = self.k1 * xs + self.b1
         return major + (minor >> self.nb)
 
 
@@ -258,7 +258,7 @@ def level_fit(xs: pd.Series, ys: pd.Series, bit: int) -> LevelCR:
         k1, _ = int_frac(kf * (1 << nb))
         b1, _ = int_frac(bf * (1 << nb))
         coefs: CoefsLevel = CoefsLevel(k0, b0, k1, b1, nb)
-        xa: Int32s = xs.to_numpy().astype(np.int32)
+        xa: Int64s = xs.to_numpy().astype(np.int64)
         rs: pd.Series = ys - coefs.predict(xa)
         rmin: int = int(rs.min())
         coefs = CoefsLevel(k0, b0 + rmin, k1, b1, nb)
@@ -398,7 +398,7 @@ class CoefsExact(tp.NamedTuple):
     b1: int
     nb: int
 
-    def predict(self: tp.Self, xs: Int32s) -> Int32s:
+    def predict(self: tp.Self, xs: Int64s) -> Int64s:
         '''
         Applies the fit form and coefficients.
 
@@ -406,9 +406,9 @@ class CoefsExact(tp.NamedTuple):
             No overflows.
 
         Args:
-            xs (Int32s): data input to fit
+            xs (Int64s): data input to fit
         Returns:
-            Int32s: predicted values fitted
+            Int64s: predicted values fitted
         '''
 
         b0, k1, b1, nb = self
@@ -439,7 +439,7 @@ def exact_fit(xs: pd.Series, ys: pd.Series) -> CoefsExact:
         k1, _ = int_frac(float(k) * (1 << nb))
         b1, _ = int_frac(bf * (1 << nb))
         coefs: CoefsExact = CoefsExact(b0, k1, b1, nb)
-        xa: Int32s = xs.to_numpy().astype(np.int32)
+        xa: Int64s = xs.to_numpy().astype(np.int64)
         if np.all(ys == coefs.predict(xa)):
             return coefs
     else:
