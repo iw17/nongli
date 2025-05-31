@@ -38,26 +38,25 @@
 
 ## 数据
 
-本节假设用户的当前工作目录为 `nongli/data`。若导出到 `fit/data.hpp` 中 1900 至 2199 年的数据已经足够，则本节可以跳过。
+本节假设用户的当前工作目录为 `nongli/data`。为节约 Git 版本库空间，导出的数据文件 `fit/data.hpp` 不再参与 Git 版本管理。[GitHub Releases](https://github.com/iw17/nongli/releases) 提供了几个年份区间对应的 `data.hpp`，若这些区间不能满足需求，可以参考本节内容自行导出。
 
 ### 配置环境
 
-执行如下命令，配置环境：
+在 [venv](https://docs.python.org/3/library/venv.html) 中执行如下命令，配置环境：
 
 ```bash
-conda env create -f environment.yml
-conda activate Nongli
+python -m pip install -r requirements.txt
 ```
 
 ### 爬取原始数据
 
-执行如下命令，获取原始数据并导出到 `data/build/raw.txt`：
+执行如下命令，获取从 1900 年到 2199 年的原始数据并导出到 `data/build/raw.txt`：
 
 ```bash
-python -u spider.py
+python -u spider.py -l 1900 -u 2199
 ```
 
-爬虫脚本 `spider.py` 中的 `MIN` 和 `MAX` 可以按需修改。由于“超级万年历”拟合算法的精度有限，-4712 A.D.（4713 B.C.）以前和 9999 A.D. 以后的计算很可能不准确。
+上述命令中的上下界可以按需修改。由于“超级万年历”拟合算法的精度有限，-4712 A.D.（4713 B.C.）以前和 9999 A.D. 以后的计算很可能不准确。
 
 ### 重排数据
 
@@ -73,13 +72,13 @@ python -u split.py
 
 ### 生成数据文件
 
-执行如下命令，将生成的拟合参数与残差数据导出到 `fit/data.hpp`：
+执行如下命令，将从 1900 年到 2199 年的拟合参数与残差数据导出到 `fit/data.hpp`：
 
 ```bash
-python -u coefs.py
+python -u coefs.py -l 1900 -u 2199 -o ../fit
 ```
 
-计算脚本 `coefs.py` 中的 `MIN` 和 `MAX` 可以按需修改，但不能超过前述原始数据的范围。若不修改爬虫脚本，则此处需满足 `MIN >= -5000` 且 `MAX < 10500`。
+上述命令中的上下界可以按需修改，但不能超过爬虫脚本导出的原始数据范围。
 
 ## 拟合
 

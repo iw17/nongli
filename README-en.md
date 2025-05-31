@@ -42,26 +42,25 @@
 
 ## Data
 
-It is assumed in this section that the user's PWD is `nongli/data`. You can skip this section if satisfied with the data exported from 1900 to 2199 in `fit/data.hpp`.
+It is assumed in this section that the user's PWD is `nongli/data`. To save Git repository space, the export data file `fit/data.hpp` is removed from Git VCS. Provided on [GitHub Releases](https://github.com/iw17/nongli/releases) are a few `data.hpp` files corresponding to different time intervals. You can refer to this section and export one `data.hpp` if not satisfied with those provided.
 
 ### Environment Setup
 
-To set up the environment, use the following commands:
+To set up the environment, use the following command in [venv](https://docs.python.org/3/library/venv.html):
 
 ```bash
-conda env create -f environment.yml
-conda activate Nongli
+python -m pip install -r requirements.txt
 ```
 
 ### Fetching Raw Data
 
-To fetch raw data and export them to `data/build/raw.txt`, use the following command:
+To fetch raw data from 1900 to 2199 and export them to `data/build/raw.txt`, use the following command:
 
 ```bash
-python -u spider.py
+python -u spider.py -l 1900 -u 2199
 ```
 
-The constants `MIN` and `MAX` in `spider.py` are modifiable. Note that data before -4712 A.D. (4713 B.C.) and after 9999 A.D. may be inaccurate due to the limited precision of the fitting algorithms in SXWNL.
+The lower and upper time bounds above are modifiable. Note that data before -4712 A.D. (4713 B.C.) and after 9999 A.D. may be inaccurate due to the limited precision of the fitting algorithms in SXWNL.
 
 ### Rearranging Data
 
@@ -77,13 +76,13 @@ Note that this repository is NOT applicable for **historical** calendars **actua
 
 ### Generating Data File
 
-To export fitting arguments and residuals to `fit/data.hpp`, use the following command:
+To export to `fit/data.hpp` fitting arguments and residuals from 1900 to 2199, use the following command:
 
 ```bash
-python -u coefs.py
+python -u coefs.py -l 1900 -u 2199 -o ../fit
 ```
 
-The constants `MIN` and `MAX` in `coefs.py` are modifiable without exceeding the original data range. If the spider script is not modified, it shall be satisfied that `MIN >= -5000` and that `MAX < 10500`. 
+The lower and upper bounds above are modifiable but must be in the original data range exported by the spider script.
 
 ## Fitting
 
