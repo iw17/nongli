@@ -33,6 +33,3 @@
 
 # Build directories
 **/build/
-
-# Data file for fitting
-data.hpp
