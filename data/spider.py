@@ -3,7 +3,9 @@ Fetches and calculates data and generates raw data text file.
 Note: Do not spider too frequently or requests may be blocked.
 '''
 
+import argparse as ap
 import os
+import time
 import typing as tp
 
 from selenium import webdriver
@@ -25,7 +27,43 @@ def value_input(elem: WebElement, value: int) -> None:
     elem.send_keys(f'{value}\n')
 
 
-def spider_js(batch: int, out_file: str) -> None:
+class Config(tp.NamedTuple):
+    '''
+    Configurations for time bounds to export.
+
+    Assumptions:
+        * `upper > lower`.
+
+    Attributes:
+        lower (int): minimal `nian`, `sui` and year
+        upper (int): maximal `nian`, `sui` and year
+    '''
+
+    lower: int
+    upper: int
+
+
+def load_config() -> Config:
+    parser: ap.ArgumentParser = ap.ArgumentParser()
+    kw_min: dict[str, tp.Any] = {
+        'type': int,
+        'required': True,
+        'help': 'lower bound of nian, sui, year',
+        'metavar': 'MIN',
+    }
+    kw_max: dict[str, tp.Any] = {
+        'type': int,
+        'required': True,
+        'help': 'upper bound of nian, sui, year',
+        'metavar': 'MAX',
+    }
+    parser.add_argument('-l', '--lower', **kw_min)
+    parser.add_argument('-u', '--upper', **kw_max)
+    args: ap.Namespace = parser.parse_args()
+    return Config(args.lower, args.upper)
+
+
+def spider_js(batch: int, out_file: str, conf: Config) -> None:
     '''
     Fetches `nongli` data via JavaScript in the webdriver.
 
@@ -36,8 +74,7 @@ def spider_js(batch: int, out_file: str) -> None:
         WebDriverException: on bad connection to the site
     '''
 
-    MIN: int = -5000
-    MAX: int = 10000
+    lo, hi = conf
     # use your preferred browser
     with webdriver.Firefox() as driver:
         driver.get('https://sxwnl.com/super')
@@ -47,7 +84,7 @@ def spider_js(batch: int, out_file: str) -> None:
         yinput: WebElement = driver.find_element(By.ID, 'Cp2_y')
         with open(out_file, 'w'):
             pass
-        for year in range(MIN, MAX + 1, batch):
+        for year in range(lo, hi + 1, batch):
             value_input(elem=yinput, value=year)
             driver.execute_script('getNianLiN()')
             try:
@@ -57,13 +94,16 @@ def spider_js(batch: int, out_file: str) -> None:
             data: WebElement = driver.find_element(By.ID, 'Cal7')
             with open(out_file, 'a') as raw_file:
                 raw_file.write(f'{data.text}\n')
-    # time.sleep is unnecessary as only one request is sent
+            time.sleep(5) # secs per batch
 
 
 def main() -> None:
     here: str = os.path.dirname(__file__)
-    out_txt: str = os.path.join(here, 'build', 'raw.txt')
-    spider_js(batch=500, out_file=out_txt)
+    out_dir: str = os.path.join(here, 'build')
+    os.makedirs(out_dir, exist_ok=True)
+    out_txt: str = os.path.join(out_dir, 'raw.txt')
+    conf: Config = load_config()
+    spider_js(batch=500, out_file=out_txt, conf=conf)
 
 
 if __name__ == '__main__':
