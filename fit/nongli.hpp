@@ -75,7 +75,7 @@ constexpr int32_t yd_resd(int32_t cyue) noexcept {
     auto [isub, ibit] = math::cdivmod<uint32_t>(cyue - CYUE_MIN, 4);
     auto [iarr, iloc] = math::cdivmod<uint32_t>(isub, _data::YD_PAGE);
     const uint8_t *arrd = _data::YD_ARRD[iarr];
-    return (arrd[isub] >> (2 * ibit)) & 0b0011;
+    return (arrd[iloc] >> (2 * ibit)) & 0b0011;
 }
 
 } // namespace _fit
