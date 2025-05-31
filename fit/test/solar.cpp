@@ -43,6 +43,9 @@ int main() {
         suite.test("shihou_to_cjie",
             cjies[i], iw17::shihou_to_cjie, shis[i]
         );
+        suite.test("shihou_to_usec",
+            jquss[i], iw17::shihou_to_usec, shis[i]
+        );
         suite.test("shihou_to_dati",
             jqdts[i], iw17::shihou_to_dati, shis[i]
         );
