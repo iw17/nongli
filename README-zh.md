@@ -40,6 +40,8 @@
 
 本节假设用户的当前工作目录为 `nongli/data`。为节约 Git 版本库空间，导出的数据文件 `fit/data.hpp` 不再参与 Git 版本管理。[GitHub Releases](https://github.com/iw17/nongli/releases) 提供了几个年份区间对应的 `data.hpp`，若这些区间不能满足需求，可以参考本节内容自行导出。
 
+本节 Python 代码均可在 3.11.2 环境下运行，较新版本的 Python 应该也可以运行。如果不能运行，欢迎[指出](https://github.com/iw17/nongli/issues)。
+
 ### 配置环境
 
 在 [venv](https://docs.python.org/3/library/venv.html) 中执行如下命令，配置环境：

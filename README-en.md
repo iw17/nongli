@@ -44,6 +44,8 @@
 
 It is assumed in this section that the user's PWD is `nongli/data`. To save Git repository space, the export data file `fit/data.hpp` is removed from Git VCS. Provided on [GitHub Releases](https://github.com/iw17/nongli/releases) are a few `data.hpp` files corresponding to different time intervals. You can refer to this section and export one `data.hpp` if not satisfied with those provided.
 
+All the Python code here can run with Python 3.11.2. I guess it should be OK with later Python. If not, welcome to create [issues](https://github.com/iw17/nongli/issues).
+
 ### Environment Setup
 
 To set up the environment, use the following command in [venv](https://docs.python.org/3/library/venv.html):
