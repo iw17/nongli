@@ -11,6 +11,21 @@ struct date {
     int8_t day;
 };
 
+constexpr bool check_date(date locd) noexcept {
+    auto [y, m, d] = locd;
+    if (m < 1 || m > 12 || d < 1 || d > 31) {
+        return false;
+    }
+    constexpr int32_t DAYS_IN_MONTH[] = {
+        31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31,
+    };
+    if (m == 2) {
+        bool leap = !(y % 4) && y % 100 || !(y % 400);
+        return d <= DAYS_IN_MONTH[m - 1] + leap;
+    }
+    return d <= DAYS_IN_MONTH[m - 1];
+}
+
 constexpr int32_t date_to_uday(date locd) noexcept {
     auto [y, m, d] = locd;
     if ((m -= 3) < 0) {
@@ -91,6 +106,20 @@ struct dati {
     int8_t sec;
     tzinfo zone;
 };
+
+constexpr bool check_dati(dati zond) noexcept {
+    auto [y, m, d, hh, mm, ss, tz] = zond;
+    if (!check_date({y, m, d})) return false;
+    if (hh < 0 || hh >= 24 || mm < 0 || mm >= 60) {
+        return false;
+    }
+    if (ss < 0 || ss >= 60) { // ignores leap second
+        return false;
+    }
+    constexpr tzinfo TZ_MIN = tzinfo::west_1200;
+    constexpr tzinfo TZ_MAX = tzinfo::east_1400;
+    return tz >= TZ_MIN && tz <= TZ_MAX;
+}
 
 constexpr date dati_to_date(dati zond) noexcept {
     return date{zond.year, zond.mon, zond.day};

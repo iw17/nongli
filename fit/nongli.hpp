@@ -92,6 +92,29 @@ constexpr int8_t days_in_cyue(int32_t cyue) noexcept {
     return next - ud01;
 }
 
+constexpr riqi riqi_to_hui(riqi nianyue) noexcept {
+    auto [nian, ryue, _] = nianyue;
+    int8_t run = nian_to_run(nian);
+    int8_t nyue = ryue_to_nyue(ryue, run);
+    int32_t cy01 = nian_to_cyue(nian);
+    nianyue.tian = days_in_cyue(cy01 + nyue);
+    return nianyue;
+}
+
+constexpr bool check_riqi(riqi rizi) noexcept {
+    auto [nian, ryue, tian] = rizi;
+    if (ryue < 2 || ryue > 25 || tian < 1) {
+        return false;
+    }
+    int8_t run = nian_to_run(nian);
+    if (ryue & 1 && ryue >> 1 != run) {
+        return false;
+    }
+    int8_t nyue = ryue_to_nyue(ryue, run);
+    int32_t cy01 = nian_to_cyue(nian);
+    return tian <= days_in_cyue(cy01 + nyue);
+}
+
 constexpr int32_t uday_to_cyue(int32_t uday) noexcept {
     int32_t bfit = _data::DY_COEF[1] * uday + _data::DY_COEF[2];
     int32_t pred = _data::DY_COEF[0] + (bfit >> _data::DY_BITS);

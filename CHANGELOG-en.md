@@ -6,6 +6,15 @@
 
 ## [Unreleased]
 
+### Added
+
+* Functions to check the validity of `date`, `dati`, `riqi`.
+* Function `riqi_to_hui` for last day of the `nianyue`.
+
+### Removed
+
+* Default copy constructor of `test_suite`.
+
 
 ## [1.1.1] - 2025-05-31 五月初五
 
