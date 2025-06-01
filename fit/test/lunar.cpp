@@ -27,6 +27,14 @@ constexpr int8_t nyues[N] = {
 constexpr int8_t ndays[] = {
     30, 29, 30, 29, 30, 30,
 };
+constexpr iw17::riqi huis[N] = {
+    iw17::riqi{1911, 22, 30},
+    iw17::riqi{1963,  9, 29},
+    iw17::riqi{1984, 24, 30},
+    iw17::riqi{2006, 15, 29},
+    iw17::riqi{2024, 16, 30},
+    iw17::riqi{2048, 16, 30},
+};
 constexpr int32_t cy01s[N] = {
     -730, -87, +173, +445, +668, +965,
 };
@@ -63,6 +71,17 @@ constexpr iw17::riqi nt83s[N] = {
     iw17::riqi{2024, 20, 29},
     iw17::riqi{2048, 22, 25},
 };
+constexpr iw17::riqi chkrs[N] = {
+    iw17::riqi{1904,  1, 24},
+    iw17::riqi{1911, 22, 30},
+    iw17::riqi{1963,  9, 30},
+    iw17::riqi{2002,  5, 25},
+    iw17::riqi{2015, 26,  7},
+    iw17::riqi{2055,  4, -1},
+};
+constexpr bool vldrs[N] = {
+    false, true, false, false, false, false,
+};
 
 int main() {
     using namespace iw17::prestd::literal;
@@ -85,6 +104,12 @@ int main() {
         );
         suite.test("days_in_cyue",
             ndays[i], iw17::days_in_cyue, cyues[i]
+        );
+        suite.test("riqi_to_hui",
+            huis[i], iw17::riqi_to_hui, rizis[i]
+        );
+        suite.test("check_riqi",
+            vldrs[i], iw17::check_riqi, chkrs[i]
         );
         suite.test("uday_to_cyue",
             cyues[i], iw17::uday_to_cyue, udays[i]
