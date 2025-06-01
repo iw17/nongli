@@ -42,7 +42,7 @@
 
 ## Data
 
-It is assumed in this section that the user's PWD is `nongli/data`. To save Git repository space, the export data file `fit/data.hpp` is removed from Git VCS. Provided on [GitHub Releases](https://github.com/iw17/nongli/releases) are a few `data.hpp` files corresponding to different time intervals. You can refer to this section and export one `data.hpp` if not satisfied with those provided.
+It is assumed in this section that the user's PWD is `nongli/data`. You can skip this section if satisfied with the data exported from 1900 to 2199 in `fit/data.hpp`. Provided on [GitHub Releases](https://github.com/iw17/nongli/releases) are a few `data.hpp` files corresponding to different time intervals. If not content with them, you can refer to this section and export one.
 
 All the Python code here can run with Python 3.11.2. I guess it should be OK with later Python. If not, welcome to create [issues](https://github.com/iw17/nongli/issues).
 
@@ -106,7 +106,7 @@ ctest
 
 ### `Riqi`: Date in `Nongli`
 
-In this repository, `nian` starts from one `chunjie` (p01-01) until next. The value of `ryue` being 2, 3, ... 24, 25 refers to p01, r01, ... p12, r12, respectively. In Chinese, p11 and p12 are also called `dongyue` and `layue`, respectively.
+The `chuyi` (1st) of a `nongli yue` is the day containing `shuo` (the instant when the Sun's and the Moon's apparent geocentric ecliptic longitudes meet). The `yue` on which `dongzhi` falls is p11. If there are 13 `yue`s from one p11 until next, the first `yue` that does not contain a `zhongqi` (`dongzhi`, `dahan`, ... `xiaoxue`) is called a `runyue`. Each `nongli nian` starts from one p01 until next. In this repository, `nian` starts from one `chunjie` (p01-01) until next. The value of `ryue` being 2, 3, ... 24, 25 refers to p01, r01, ... p12, r12, respectively. In Chinese, p11 and p12 are also called `dongyue` and `layue`, respectively.
 
 > 1970 `nian` corresponds to the interval from Unix timestamp 3081600 sec until 33753600 sec.
 
@@ -124,7 +124,7 @@ In this repository, `shengri` occurs when both `yue` and `tian` match the birth 
 
 ### `Jieqi`: a.k.a. Solar Term
 
-In this repository, `sui` starts from one `dongzhi` (a.k.a. winter solstice) until next. The ordinal of `jieqi` being 0, 1, ... 23 refers to `dongzhi`, `xiaohan`, ... `daxue`, where those with odd ordinals are classified as `jieling` and those with even ordinals as `zhongqi`.
+`Jieqi` is the moment when the Sun's apparent geocentric ecliptic longitude is a multiple of 15°, and also refers to the interval from one `jieqi` moment until next. Names and longitudes of 24 `jieqi`s are listed in [Appendix](#24-jieqis). In this repository, `sui` starts from one `dongzhi` (a.k.a. winter solstice) until next. The ordinal of `jieqi` being 0, 1, ... 23 refers to `dongzhi`, `xiaohan`, ... `daxue`, where those with odd ordinals are classified as `jieling` and those with even ordinals as `zhongqi`.
 
 > 1970 `sui` corresponds to the interval from Unix timestamp -861379 sec until 30695740 sec.
 
@@ -136,11 +136,11 @@ In this repository, `shihou` is a struct consisting of `sui` and `jieqi` stated 
 
 ### Zodiac Sign
 
-Here zodiac sign is primarily on astrology instead of astronomy. Zodiac signs, originated from ancient Babylon, **do NOT belong to `nongli`**, but are determined from the apparent longitude of the Sun on the ecliptic. Thus, they correspond to `jieqi`s in `nongli`. The ordinal of zodiac sign being 0, 1, ... 11 refers to Aries, Taurus, ... Pisces, respectively. Starting with Aries (`chunfen`, a.k.a. vernal equinox), each zodiac sign follows a `zhongqi` (`chunfen`, `guyu`, ... `yushui`).
+Here zodiac sign is primarily on astrology instead of astronomy. Zodiac signs, originated from ancient Babylon, **do NOT belong to `nongli`**, but are determined from the apparent longitude of the Sun on the ecliptic. Thus, they correspond to `jieqi`s in `nongli`. The ordinal of zodiac sign being 0, 1, ... 11 refers to Aries, Taurus, ... Pisces, respectively. Names and corresponding `jieqi`s of 12 zodiac signs are listed in [Appendix](#12-zodiac-signs). Starting with Aries (`chunfen`, a.k.a. vernal equinox), each zodiac sign follows a `zhongqi` (`chunfen`, `guyu`, ... `yushui`).
 
 ### `Ganzhi`
 
-`Ganzhi` is a combination of `tiangan` (`jia`, `yi`, ... `gui`) and `dizhi` (`zi`, `chou`, ... `hai`), occurring in pairs for 60-periodic counting. The ordinal of `ganzhi` being 0, 1, ... 59 refers to `jia_zi`, `yi_chou`, ... `gui_hai`, respectively.
+`Ganzhi` is a combination of `tiangan` (`jia`, `yi`, ... `gui`) and `dizhi` (`zi`, `chou`, ... `hai`), occurring in pairs for 60-periodic counting. Names of 10 `tiangan`s and 12 `dizhi`s are list in [Appendix](#10-tiangans). The ordinal of `ganzhi` being 0, 1, ... 59 refers to `jia_zi`, `yi_chou`, ... `gui_hai`, respectively.
 
 ### `Futian`
 
@@ -272,7 +272,7 @@ Note that the ordinals in this repository are 0-base for the convenience of prog
 | 1 | `chou` | ox |
 | 2 | `yin` | tiger |
 | 3 | `mao` | rabbit |
-| 4 | `chen` | dragon |
+| 4 | `chen` | loong |
 | 5 | `si` | snake |
 | 6 | `wu` | horse |
 | 7 | `wei` | sheep |
