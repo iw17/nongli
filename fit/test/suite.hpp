@@ -45,6 +45,8 @@ test_suite() noexcept: pass(0), fail(0) {
     std::printf("Test suite initialized at %s\n", buf);
 }
 
+test_suite(const test_suite &) = delete;
+
 template <class Ret, class... Args>
 bool test(str_t msg,
     const Ret &real, Ret (*func)(Args...), Args... args
