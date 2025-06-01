@@ -20,7 +20,7 @@ constexpr bool check_date(date locd) noexcept {
         31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31,
     };
     if (m == 2) {
-        bool leap = !(y % 4) && y % 100 || !(y % 400);
+        bool leap = (!(y % 4) && y % 100) || !(y % 400);
         return d <= DAYS_IN_MONTH[m - 1] + leap;
     }
     return d <= DAYS_IN_MONTH[m - 1];
