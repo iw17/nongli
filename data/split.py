@@ -356,11 +356,13 @@ class Split:
 
         data_lu: list[str] = self._calc_data_lu(csv)
         EXT: str = 'csv' if csv else 'txt'
+        # RFC 4180: ... line, delimited by a line break (CRLF)
+        EOL: str | None = '\r\n' if csv else None
         out_lu: str = os.path.join(out_dir, f'lunar.{EXT}')
         st_zy: str = f'01970,02' if csv else '01970.p01'
         ep_zy: str = next(d for d in data_lu if st_zy in d)
         ld_zy: int = data_lu.index(ep_zy)
-        with open(out_lu, 'w') as ofp_lu:
+        with open(out_lu, 'w', newline=EOL) as ofp_lu:
             if csv:
                 ofp_lu.write('cyue,nian,ryue,usec\n')
             for i, lu in enumerate(data_lu, start=-ld_zy):
@@ -372,7 +374,7 @@ class Split:
         st_dz: str = '01970,00' if csv else '01970.dz'
         ep_dz: str = next(d for d in data_so if st_dz in d)
         ld_dz: int = data_so.index(ep_dz)
-        with open(out_so, 'w') as ofp_so:
+        with open(out_so, 'w', newline=EOL) as ofp_so:
             if csv:
                 ofp_so.write('cjie,sui,jie,usec\n')
             for i, so in enumerate(data_so, start=-ld_dz):

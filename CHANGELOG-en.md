@@ -11,6 +11,10 @@
 * Functions to check the validity of `date`, `dati`, `riqi`.
 * Function `riqi_to_hui` for last day of the `nianyue`.
 
+### Changed
+
+* End-of-line of exported CSV data file into CRLF.
+
 ### Removed
 
 * Default copy constructor of `test_suite`.
