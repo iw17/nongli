@@ -16,11 +16,11 @@ constexpr bool check_date(date locd) noexcept {
     if (m < 1 || m > 12 || d < 1 || d > 31) {
         return false;
     }
-    constexpr int32_t DAYS_IN_MONTH[] = {
+    constexpr int8_t DAYS_IN_MONTH[] = {
         31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31,
     };
     if (m == 2) {
-        bool leap = (!(y % 4) && y % 100) || !(y % 400);
+        bool leap = (!(y & 3) && y % 25) || !(y & 15);
         return d <= DAYS_IN_MONTH[m - 1] + leap;
     }
     return d <= DAYS_IN_MONTH[m - 1];
