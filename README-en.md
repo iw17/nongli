@@ -99,7 +99,7 @@ It is assumed the user's PWD is `nongli/fit`. To run test examples, use the foll
 ```bash
 mkdir build
 cd build
-cmake ..
+cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build .
 ctest
 ```
