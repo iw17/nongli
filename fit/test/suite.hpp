@@ -4,7 +4,8 @@
 #include <chrono>
 #include <cinttypes>
 #include <cstdio>
-#include <cstdlib>
+#include <functional>
+#include <type_traits>
 
 namespace iw17 {
 
@@ -41,23 +42,26 @@ test_suite() noexcept: pass(0), fail(0) {
 #else // _MSC_VER
     std::tm *ptm = std::localtime(&now);
 #endif // _MSC_VER
-    std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S %Z", ptm);
+    constexpr str_t TIME_FMT = "%Y-%m-%d %H:%M:%S %Z";
+    std::strftime(buf, sizeof(buf), TIME_FMT, ptm);
     std::printf("Test suite initialized at %s\n", buf);
 }
 
 test_suite(const test_suite &) = delete;
 
-template <class Ret, class... Args>
-bool test(str_t msg,
+template <class Chk, class Ret, class... Args>
+auto test(str_t msg, Chk check,
     const Ret &real, Ret (*func)(Args...), Args... args
-) {
+) -> std::enable_if_t<
+    std::is_convertible_v<decltype(check(real, real)), bool>,
+bool> {
     constexpr str_t FMT[] = {
         "[ ] %" PRIu64 "%s item passed on %s",
         "[X] %" PRIu64 "%s item failed on %s",
         ", taking %" PRId64 " ns\n",
     };
     auto t0 = std::chrono::steady_clock::now();
-    bool passed = func(args...) == real;
+    bool passed = check(real, func(args...));
     auto t1 = std::chrono::steady_clock::now();
     std::FILE *fp = nullptr;
     uint64_t count = this->pass + this->fail + 1;
@@ -74,7 +78,15 @@ bool test(str_t msg,
     return passed;
 }
 
-uint64_t complete() const noexcept {
+template <class Ret, class... Args>
+auto test(str_t msg,
+    const Ret &real, Ret (*func)(Args...), Args... args
+) -> bool {
+    constexpr std::equal_to<Ret> EQUAL = {};
+    return this->test(msg, EQUAL, real, func, args...);
+}
+
+bool complete() const noexcept {
     uint64_t total = this->pass + this->fail;
     constexpr str_t FMT[] = {
         "%" PRIu64 " item%s all passed\n",
@@ -87,7 +99,7 @@ uint64_t complete() const noexcept {
         const char *suf = plural_suffix(this->fail);
         std::fprintf(stderr, FMT[1], this->fail, suf, total);
     }
-    return this->fail;
+    return this->fail != 0;
 }
 
 }; // struct test_suite
