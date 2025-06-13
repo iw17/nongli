@@ -86,7 +86,7 @@ auto test(str_t msg,
     return this->test(msg, EQUAL, real, func, args...);
 }
 
-bool complete() const noexcept {
+uint64_t complete() const noexcept {
     uint64_t total = this->pass + this->fail;
     constexpr str_t FMT[] = {
         "%" PRIu64 " item%s all passed\n",
