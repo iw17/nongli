@@ -140,7 +140,7 @@ Here zodiac sign is primarily on astrology instead of astronomy. Zodiac signs, o
 
 ### `Ganzhi`
 
-`Ganzhi` is a combination of `tiangan` (`jia`, `yi`, ... `gui`) and `dizhi` (`zi`, `chou`, ... `hai`), occurring in pairs for 60-periodic counting. Names of 10 `tiangan`s and 12 `dizhi`s are list in [Appendix](#10-tiangans). The ordinal of `ganzhi` being 0, 1, ... 59 refers to `jia_zi`, `yi_chou`, ... `gui_hai`, respectively.
+`Ganzhi` is a combination of `tiangan` (`jia`, `yi`, ... `gui`) and `dizhi` (`zi`, `chou`, ... `hai`), occurring in pairs for 60-periodic counting. Names of 10 `tiangan`s and 12 `dizhi`s are listed in [Appendix](#10-tiangans). The ordinal of `ganzhi` being 0, 1, ... 59 refers to `jia_zi`, `yi_chou`, ... `gui_hai`, respectively.
 
 ### `Futian`
 
