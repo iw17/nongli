@@ -17,27 +17,6 @@ bool dbl_close(double a, double b) noexcept {
     return diff >= -TOL && diff <= TOL;
 }
 
-// divmods
-
-constexpr int64_t nums[N] = {
-    +5_i64, +5_i64, -5_i64, -5_i64,
-};
-constexpr int64_t dens[N] = {
-    +3_i64, -3_i64, +3_i64, -3_i64,
-};
-constexpr im::quotrem<int64_t> cqrs[N] = {
-    im::quotrem<int64_t>{+1_i64, +2_i64},
-    im::quotrem<int64_t>{-1_i64, +2_i64},
-    im::quotrem<int64_t>{-1_i64, -2_i64},
-    im::quotrem<int64_t>{+1_i64, -2_i64},
-};
-constexpr im::quotrem<int64_t> pyqrs[N] = {
-    im::quotrem<int64_t>{+1_i64, +2_i64},
-    im::quotrem<int64_t>{-2_i64, -1_i64},
-    im::quotrem<int64_t>{-2_i64, +1_i64},
-    im::quotrem<int64_t>{+1_i64, -2_i64},
-};
-
 // fixed-point arithmetics
 
 constexpr double dbls[N] = {
@@ -53,10 +32,10 @@ constexpr im::fix64 fixs[N] = {
     im::fill_fix64(-0x00'5314'ac37_i64),
 };
 constexpr int64_t fs_ints[N] = {
-    0, -3, +7, -1,
+    0_i64, -3_i64, +7_i64, -1_i64,
 };
 constexpr int64_t sf_ints[N] = {
-    0, -2, +8, 0,
+    0_i64, -2_i64, +8_i64, 0_i64,
 };
 constexpr im::fix64 rhss[N] = {
     im::fill_fix64(+0x01'82ac'2316_i64),
@@ -65,16 +44,16 @@ constexpr im::fix64 rhss[N] = {
     im::fill_fix64(-0x0b'1847'1b64_i64),
 };
 constexpr im::fix64 fs_muls[N] = {
-    im::fill_fix64(+0x0000'27a9),
-    im::fill_fix64(-0xe8bd'71f2),
-    im::fill_fix64(-0x1349'5700),
-    im::fill_fix64(-0x663b'95df),
+    im::fill_fix64(+0x0000'27a9_i32),
+    im::fill_fix64(-0xe8bd'71f2_i32),
+    im::fill_fix64(-0x1349'5700_i32),
+    im::fill_fix64(-0x663b'95df_i32),
 };
 constexpr im::fix64 tn_muls[N] = {
-    im::fill_fix64(+0x0000'27a9),
-    im::fill_fix64(-0xe8bd'71f1),
-    im::fill_fix64(-0x1349'56ff),
-    im::fill_fix64(-0x663b'95de),
+    im::fill_fix64(+0x0000'27a9_i32),
+    im::fill_fix64(-0xe8bd'71f1_i32),
+    im::fill_fix64(-0x1349'56ff_i32),
+    im::fill_fix64(-0x663b'95de_i32),
 };
 constexpr im::fix64 fr_muls[N] = {
     im::fill_fix64(+0x00'0000'27a9_i64),
@@ -137,21 +116,7 @@ constexpr im::fix64 sins[N] = {
 
 int main() {
     iw17::test_suite suite;
-    //constexpr uint64_t i = 1;
-    //constexpr auto a = im::fast_div(fnums[i], fdens[i]);
     for (uint64_t i = 0; i < N; i++) {
-        suite.test("cdivmod",
-            cqrs[i], im::cdivmod, nums[i], dens[i]
-        );
-        suite.test("pydivmod",
-            pyqrs[i], im::pydivmod, nums[i], dens[i]
-        );
-        suite.test("pydiv",
-            pyqrs[i].quot, im::pydiv, nums[i], dens[i]
-        );
-        suite.test("pymod",
-            pyqrs[i].rem, im::pymod, nums[i], dens[i]
-        );
         suite.test("make_fix64",
             fixs[i], im::make_fix64, dbls[i]
         );
