@@ -40,19 +40,15 @@ constexpr Int half_up(Float fval) noexcept {
 template <class Int>
 constexpr Int pydiv(Int num, Int den) noexcept {
     Int quot = num / den, rem = num % den;
-    if (rem != 0 && (den < 0) != (rem < 0)) {
-        return quot - 1;
-    }
-    return quot;
+    bool cyc = rem != 0 && (den < 0) != (rem < 0);
+    return quot - cyc;
 }
 
 template <class Int>
 constexpr Int pymod(Int num, Int den) noexcept {
     Int rem = num % den;
-    if (rem != 0 && (den < 0) != (rem < 0)) {
-        return rem + den;
-    }
-    return rem;
+    bool cyc = rem != 0 && (den < 0) != (rem < 0);
+    return rem + den * cyc;
 }
 
 template <class Int>
@@ -69,10 +65,8 @@ constexpr quotrem<Int> cdivmod(Int num, Int den) noexcept {
 template <class Int>
 constexpr quotrem<Int> pydivmod(Int num, Int den) noexcept {
     Int quot = num / den, rem = num % den;
-    if (rem != 0 && (den < 0) != (rem < 0)) {
-        return quotrem<Int>{quot - 1, rem + den};
-    }
-    return quotrem<Int>{quot, rem};
+    bool cyc = rem != 0 && (den < 0) != (rem < 0);
+    return quotrem<Int>{quot - cyc, rem + den * cyc};
 }
 
 enum class fix64: int64_t {};
