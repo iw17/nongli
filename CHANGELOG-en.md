@@ -11,6 +11,7 @@
 * Functions to check the validity of `date`, `dati`, `riqi`.
 * Function `riqi_to_hui` for last day of the `nianyue`.
 * Method of test suite to allow custom equality to pass.
+* Unit tests for math module.
 
 ### Changed
 

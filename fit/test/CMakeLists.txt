@@ -24,11 +24,13 @@ else()
     add_compile_options(-Wshadow)
 endif()
 
+add_executable(math_test "math.cpp")
 add_executable(dati_test "dati.cpp")
 add_executable(lunar_test "lunar.cpp")
 add_executable(solar_test "solar.cpp")
 add_executable(ganzhi_test "ganzhi.cpp")
 
+add_test(NAME MathTest COMMAND math_test)
 add_test(NAME DatiTest COMMAND dati_test)
 add_test(NAME LunarTest COMMAND lunar_test)
 add_test(NAME SolarTest COMMAND solar_test)

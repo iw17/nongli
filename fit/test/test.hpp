@@ -26,10 +26,15 @@ IW_ENABLE_EQUAL_BY_UINT(bazi)
 
 IW_ENABLE_EQUAL_BY_PAIR(shihou)
 
+template <class Int>
+IW_ENABLE_EQUAL_BY_PAIR(math::quotrem<Int>)
+
 } // namespace iw17
 
 #undef IW_ENABLE_EQUAL_BY_UINT
 #undef IW_ENABLE_EQUAL_BY_PAIR
+
+using iw17::operator==;
 
 #include "suite.hpp"
 
