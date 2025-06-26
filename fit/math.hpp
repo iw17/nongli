@@ -2,6 +2,7 @@
 #define IW_MATH_HPP 20250205L
 
 #include <cstdint>
+#include <limits>
 
 #include "prestd.hpp"
 
@@ -27,6 +28,13 @@ constexpr T clip(T val, T min, T max) noexcept {
         return max;
     }
     return val;
+}
+
+template <class Int, class Float>
+constexpr Int half_up(Float fval) noexcept {
+    constexpr Float HALF = Float(0.5);
+    Int ival = Int(fval + HALF);
+    return ival - (ival - fval > HALF);
 }
 
 template <class Int>
@@ -91,7 +99,7 @@ constexpr fix64 make_fix64(int64_t n) noexcept {
 
 constexpr fix64 make_fix64(double d) noexcept {
     double dval = _fix::SCALE * d;
-    int64_t ival = dval + 0.5 - (d < 0.0);
+    int64_t ival = half_up<int64_t>(dval);
     return fill_fix64(ival);
 }
 
@@ -195,7 +203,7 @@ constexpr fix64 fair_mul(fix64 a, fix64 b) noexcept {
 // considers overflows and rounds off fractional part
 constexpr fix64 safe_mul(fix64 a, fix64 b) noexcept {
     constexpr uint64_t HALF = _fix::SCALE / 2;
-    uint64_t av = pour_int64(a), bv = pour_int64(b);
+    int64_t av = pour_int64(a), bv = pour_int64(b);
     uint64_t ah = av >> _fix::FBITS, al = av & _fix::FPART;
     uint64_t bh = bv >> _fix::FBITS, bl = bv & _fix::FPART;
     uint64_t hi = av * bh + ah * bl, lv = al * bl;

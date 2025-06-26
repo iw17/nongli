@@ -15,6 +15,8 @@
 ### Changed
 
 * End-of-line of exported CSV data file into CRLF.
+* Fix half-up rounding in function `make_fix64`.
+* Fix signedness in function `safe_mul`.
 
 ### Removed
 
