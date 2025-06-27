@@ -4,7 +4,7 @@
 [![en](https://img.shields.io/badge/lang-en-blue.svg)](CHANGELOG-en.md)
 
 
-## [待发布]
+## [1.1.2] - 2025-06-27 六月初三
 
 ### 新增
 
