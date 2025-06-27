@@ -96,8 +96,8 @@ python -u coefs.py -l 1900 -u 2199 -o ../fit
 mkdir build
 cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
-cmake --build .
-ctest
+cmake --build . --config Release
+ctest -C Release
 ```
 
 ### 日期

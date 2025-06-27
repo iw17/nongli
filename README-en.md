@@ -100,8 +100,8 @@ It is assumed the user's PWD is `nongli/fit`. To run test examples, use the foll
 mkdir build
 cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
-cmake --build .
-ctest
+cmake --build . --config Release
+ctest -C Release
 ```
 
 ### `Riqi`: Date in `Nongli`
