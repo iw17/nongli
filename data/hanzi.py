@@ -129,10 +129,13 @@ def run_index(name: str) -> bool:
         >>> run_index('p')
         False
         >>> run_index('a') # invalid name
-        False
+        ValueError: 'a' is not in list
     '''
 
-    return name in [_RUN_HANZI[1], _RUN_ABBRS[1]]
+    if name < '\x80':
+        return bool(_RUN_ABBRS.index(name))
+    else:
+        return bool(_RUN_HANZI.index(name))
 
 
 _DAYUE_HANZI: list[str] = ['小', '大']
@@ -149,7 +152,7 @@ def dayue_abbr(index: bool) -> str:
         str: abbreviation indicating `daxiao`
 
     Examples:
-        >>> dayue_name(True)
+        >>> dayue_abbr(True)
         'd'
     '''
 
