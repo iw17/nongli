@@ -3,6 +3,7 @@ Splits raw data file into lunar and solar components.
 Note: Please reopen with UTF-8 if it is messed up.
 '''
 
+import bisect
 import io
 import os
 import re
@@ -38,7 +39,7 @@ def parse_year(line: str) -> int:
 
     match: re.Match[str] | None = re.search(r'-?\d+', line)
     if match is None:
-        raise ValueError(f'\'{line}\' has no digit')
+        raise ValueError(f'{repr(line)} has no digit')
     year: int = int(match.group(0))
     return 1 - year if line.startswith('B') else year
 
@@ -69,7 +70,7 @@ def parse_item(line: str) -> Item:
     Args:
         line (str): item string 'MM-DD(dd hh:mm:ss)'
     Returns:
-        list[int]: parsed integer values [M, d, h, m, s]
+        Item: parsed integer values (M, d, h, m, s)
     Raises:
         ValueError: when line does not contain exactly 6 numbers
 
@@ -172,20 +173,7 @@ def bin_search(seq: tp.Sequence[tp.Any], val: tp.Any) -> int:
         2
     '''
 
-    lo, hi = 0, len(seq) - 1
-    while True:
-        # boundary
-        if val < seq[lo]:
-            return lo - 1
-        if val >= seq[hi]:
-            return hi
-        if hi - lo <= 1:
-            return hi if val >= seq[hi] else lo
-        md: int = (lo + hi) // 2
-        if val == seq[md]:
-            return md
-        # increment
-        lo, hi = (lo, md - 1) if val < seq[md] else (md, hi)
+    return bisect.bisect_right(seq, val) - 1
 
 
 class Split:
