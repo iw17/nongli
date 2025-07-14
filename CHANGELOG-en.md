@@ -4,6 +4,13 @@
 [![en](https://img.shields.io/badge/lang-en-blue.svg)](CHANGELOG-en.md)
 
 
+## [Unreleased]
+
+### Changed
+
+* Exception on parsing invalid name in `hanzi.py`.
+
+
 ## [1.1.2] - 2025-06-27 六月初三
 
 ### Added
