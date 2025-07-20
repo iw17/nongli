@@ -9,6 +9,7 @@
 ### 修改
 
 * `hanzi.py` 解析无效名称时抛出异常。
+* 多项式拟合改为依赖 `numpy.polynomial.polynomial.polyfit`。
 
 
 ## [1.1.2] - 2025-06-27 六月初三

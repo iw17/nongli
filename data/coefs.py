@@ -7,6 +7,7 @@ import warnings
 
 import numpy as np
 import pandas as pd
+from numpy.polynomial import polynomial as poly
 
 
 # Part 0: Utilities
@@ -20,6 +21,12 @@ Floats: tp.TypeAlias = np.typing.NDArray[np.float64]
 
 def int_frac(x: float) -> tuple[int, float]:
     return int(x // 1), float(x % 1)
+
+
+def poly_fit(x: tp.Any, y: tp.Any, deg: int) -> Floats:
+    x, y = map(np.asarray, [x, y])
+    coefs: tp.Any = poly.polyfit(x, y, deg)
+    return tp.cast(Floats, coefs)[::-1]
 
 
 class Config(tp.NamedTuple):
@@ -202,7 +209,9 @@ class CoefsLv1(tp.NamedTuple):
         return k0 * xs + b0 + (k1 * xs + b1 >> nb)
 
 
-Lv1CR: tp.TypeAlias = tuple[CoefsLv1, list[int]]
+class Lv1CR(tp.NamedTuple):
+    coefs: CoefsLv1
+    resis: list[int]
 
 
 def lv1_fit(xs: pd.Series, ys: pd.Series, bit: int) -> Lv1CR:
@@ -232,7 +241,7 @@ def lv1_fit(xs: pd.Series, ys: pd.Series, bit: int) -> Lv1CR:
         rmin: int = int(rs.min())
         coefs = CoefsLv1(k0, b0 + rmin, k1, b1, nb)
         if rs.max() - rmin < (1 << bit):
-            return coefs, (rs - rmin).tolist()
+            return Lv1CR(coefs, (rs - rmin).tolist())
     else:
         raise ValueError('bad idea, residuals too wide')
 
@@ -433,7 +442,9 @@ class CoefsSolar(tp.NamedTuple):
         return plin + pfit
 
 
-SolarCR: tp.TypeAlias = tuple[CoefsSolar, list[int]]
+class SolarCR(tp.NamedTuple):
+    coefs: CoefsSolar
+    resis: list[int]
 
 
 def js_fit(so: pd.DataFrame) -> SolarCR:
@@ -467,7 +478,7 @@ def js_fit(so: pd.DataFrame) -> SolarCR:
             bm: int = int(c0.max() + c0.min()) >> 1
             b0, cs[:, -1] = b0 + bm, c0 - bm
             coefs = CoefsSolar(k0, b0 + rmin, nb, cs)
-            return coefs, (ress - rmin).tolist()
+            return SolarCR(coefs, (ress - rmin).tolist())
     else:
         raise ValueError('bad idea, residuals too wide')
 
