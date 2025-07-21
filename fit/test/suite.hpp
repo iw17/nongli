@@ -53,7 +53,7 @@ template <class Chk, class Ret, class... Args>
 auto test(str_t msg, Chk check,
     const Ret &real, Ret (*func)(Args...), Args... args
 ) -> std::enable_if_t<
-    std::is_convertible_v<decltype(check(real, real)), bool>,
+    std::is_invocable_r_v<bool, Chk, Ret, Ret>,
 bool> {
     constexpr str_t FMT[] = {
         "[ ] %" PRIu64 "%s item passed on %s",
