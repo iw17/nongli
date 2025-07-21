@@ -3,7 +3,9 @@
 
 #include <cstdint>
 
-namespace iw17::_data {
+namespace iw17::data {
+
+inline namespace limits {
 
 inline constexpr int16_t NIAN_MIN = 1900;
 inline constexpr int16_t NIAN_MAX = 2199;
@@ -19,6 +21,8 @@ inline constexpr int32_t CYUE_MAX = 2844;
 
 inline constexpr int32_t CJIE_MIN = -1680;
 inline constexpr int32_t CJIE_MAX = 5519;
+
+} // namespace limits
 
 inline constexpr uint8_t NR_RUNS[] = {
     0xd8, 0x5d, 0xdd, 0xd4, 0x2d, 0x6d, 0xdd, 0xd5, 0x2d, 0x7d, 0xdd, 0xd5,
@@ -1117,6 +1121,6 @@ inline constexpr int64_t SJ_BITS = 17;
 
 inline constexpr int64_t SJ_COEF[] = { 1, 13066, 23869 };
 
-} // namespace iw17::_data, 13832 bytes in total
+} // namespace iw17::data, 13832 bytes in total
 
 #endif // IW_DATA_HPP

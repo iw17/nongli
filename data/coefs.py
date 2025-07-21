@@ -587,7 +587,8 @@ def write_head(hpp: str, conf: Config, data: Data) -> int:
         hpp_out.write('#ifndef IW_DATA_HPP\n')
         hpp_out.write('#define IW_DATA_HPP 20251005L\n\n')
         hpp_out.write('#include <cstdint>\n\n')
-        hpp_out.write('namespace iw17::_data {\n\n')
+        hpp_out.write('namespace iw17::data {\n\n')
+        hpp_out.write('inline namespace limits {\n\n')
         hpp_out.write(f'{ICX} int16_t NIAN_MIN = {lo:d};\n')
         hpp_out.write(f'{ICX} int16_t NIAN_MAX = {hi:d};\n\n')
         hpp_out.write(f'{ICX} int16_t SUI_MIN = {lo:d};\n')
@@ -598,6 +599,7 @@ def write_head(hpp: str, conf: Config, data: Data) -> int:
         hpp_out.write(f'{ICX} int32_t CYUE_MAX = {yM:d};\n\n')
         hpp_out.write(f'{ICX} int32_t CJIE_MIN = {jm:d};\n')
         hpp_out.write(f'{ICX} int32_t CJIE_MAX = {jM:d};\n\n')
+        hpp_out.write('} // namespace limits\n\n')
     return 2 * 6 + 4 * 4
 
 
@@ -681,7 +683,7 @@ def write_tail(hpp: str, total: int) -> None:
     '''
 
     with open(hpp, 'a') as hpp_out:
-        hpp_out.write('} // namespace iw17::_data, ')
+        hpp_out.write('} // namespace iw17::data, ')
         hpp_out.write(f'{total} bytes in total\n\n')
         hpp_out.write('#endif // IW_DATA_HPP\n')
 
