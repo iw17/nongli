@@ -193,7 +193,7 @@ class CoefsLv1(tp.NamedTuple):
     Attributes:
         k0 (int): major linear
         b0 (int): major constant
-        k1 (int): minor liear
+        k1 (int): minor linear
         b1 (int): minor constant
         nb (int): bits shifted
     '''
@@ -229,7 +229,7 @@ def lv1_fit(xs: pd.Series, ys: pd.Series, bit: int) -> Lv1CR:
     '''
 
     # fits like `y = k * x + b`
-    kb: Floats = np.polyfit(xs, ys, deg=1)
+    kb: Floats = poly_fit(xs, ys, deg=1)
     (k0, kf), (b0, bf) = map(int_frac, kb.tolist())
     # finds least feasible bits
     for nb in range(32):
@@ -367,7 +367,7 @@ class CoefsExact(tp.NamedTuple):
 
 def exact_fit(xs: pd.Series, ys: pd.Series) -> CoefsExact:
     # fits like `y = k * x + b`
-    k, b = np.polyfit(xs, ys + 0.5, deg=1)
+    k, b = poly_fit(xs, ys + 0.5, deg=1)
     b0, bf = int_frac(b)
     # finds least feasible bits
     for nb in range(32):
@@ -455,7 +455,7 @@ def js_fit(so: pd.DataFrame) -> SolarCR:
     suis: pd.Series = so['sui']
     usec: pd.Series = so['usec']
     # linear major
-    kb: Floats = np.polyfit(suis, usec, deg=1)
+    kb: Floats = poly_fit(suis, usec, deg=1)
     (k0, _), (b0, _) = map(int_frac, kb.tolist())
     rsec: pd.Series = usec - (k0 * suis + b0)
     # sextic minor
@@ -466,7 +466,7 @@ def js_fit(so: pd.DataFrame) -> SolarCR:
             # items of the specific `jieqi`
             ssui: Floats = suis[so['jie'] == jie].to_numpy()
             ssec: Floats = rsec[so['jie'] == jie].to_numpy()
-            coef: Floats = np.polyfit(ssui, ssec, deg=6)
+            coef: Floats = poly_fit(ssui, ssec, deg=6)
             coef *= (2.0 ** (nb * np.arange(7)))[::-1]
             lscf.append(coef.astype(np.int64))
         cs: Int64s = np.array(lscf).astype(np.int64)
@@ -533,7 +533,7 @@ def lv2_fit(xs: pd.Series, ys: pd.Series) -> CoefsLv2:
     xa: Int64s = xs.to_numpy(dtype=np.int64)
     ya: Int64s = ys.to_numpy(dtype=np.int64)
     for nb in range(22): # avoids overflow for huge x
-        kb: Floats = np.polyfit(xs, ys + 0.5, deg=1)
+        kb: Floats = poly_fit(xs, ys + 0.5, deg=1)
         kb *= 2.0 ** (nb * (1 + np.arange(2))[::-1])
         k1: int = round(float(kb[0]))
         b1: int = round(float(kb[1]))
