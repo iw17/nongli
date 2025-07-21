@@ -433,76 +433,92 @@ struct bazi { // 4 `zhu`s: `nian`, `yue`, `ri`, `shi`
 
 namespace _rst { // real solar time: longitude bias and EoT
 
-constexpr math::fix64 bias_lon(math::fix64 lon) noexcept {
-    return 240 * lon;
+using iw17::math::fix64;
+
+// true longitude (in 1/16 round) of the Sun on the ecliptic
+constexpr fix64 usec_to_q4tl(int64_t usec, int32_t cjie) noexcept {
+    constexpr int32_t CF = int32_t(jieqi::chunfen);
+    int32_t ljie = math::pymod<int32_t>(cjie - CF, 24);
+    int64_t last = cjie_to_usec(cjie);
+    int64_t next = cjie_to_usec(cjie + 1);
+    int64_t past = usec - last;
+    int64_t jdur = next - last;
+    int64_t pscf = ljie * jdur + past; // since `chunfen`
+    return math::fast_div(2 * pscf, 3 * jdur);
 }
 
-constexpr math::fix64 bias_eot(int64_t usec, int32_t cjie) noexcept {
-    using namespace math::literal;
+// centuries (36525 days) since J2000.0 epoch
+constexpr fix64 usec_to_ucen(int64_t usec) noexcept {
     constexpr int64_t EPOCH_J2K = 946728000;
     constexpr int64_t SECS_CENTURY = 3155760000;
-    // centuries (36525 days) since J2000.0 epoch
     int64_t jsec = usec - EPOCH_J2K;
-    math::fix64 ucen = math::fair_div(jsec, SECS_CENTURY);
-    // mean anomaly
-    constexpr int64_t SECS_TWO_YEARS = 63116865;
-    constexpr int64_t USEC_PERI = 946876650;
-    int64_t psec = 8 * (usec - USEC_PERI);
-    math::fix64 mano = math::fair_div(psec, SECS_TWO_YEARS);
-    // eccentricity of the Earth's orbit
-    constexpr math::fix64 ECCO_COEFS[] = {
+    return math::fair_div(jsec, SECS_CENTURY);
+}
+
+// eccentricity of the Earth's orbit
+constexpr fix64 ucen_to_ecco(fix64 ucen) noexcept {
+    constexpr fix64 ECCO_COEFS[] = {
         math::make_fix64(+1.67086e-2),
         math::make_fix64(-4.19300e-5),
         math::make_fix64(-1.26000e-7),
     };
-    math::fix64 ecco = ECCO_COEFS[2];
+    fix64 ecco = ECCO_COEFS[2];
     ecco = math::fast_mul(ecco, ucen) + ECCO_COEFS[1];
-    ecco = math::fast_mul(ecco, ucen) + ECCO_COEFS[0];
-    // hour angle bias from eccentricity
-    math::fix64 s1ma = math::sinq(mano);
-    math::fix64 s2ma = math::sinq(2 * mano);
-    math::fix64 hecc = math::fast_mul(ecco, s2ma);
-    hecc = -hecc - (hecc >> 2);
-    hecc = math::fast_mul(ecco, hecc - 2 * s1ma);
-    // obliquity of the ecliptic
-    constexpr math::fix64 OBLE_COEFS[] = {
+    return math::fast_mul(ecco, ucen) + ECCO_COEFS[0];
+}
+
+// mean anomaly (in 1/8 round) of the Earth
+constexpr fix64 usec_to_q2ma(int64_t usec) noexcept {
+    constexpr int64_t SECS_TWO_YEARS = 63116865;
+    constexpr int64_t USEC_PERI = 946876650;
+    int64_t psec = 16 * (usec - USEC_PERI);
+    return math::fair_div(psec, SECS_TWO_YEARS);
+}
+
+// obliquity of the ecliptic
+constexpr fix64 ucen_to_oble(fix64 ucen) noexcept {
+    constexpr fix64 OBLE_COEFS[] = {
         math::make_fix64(+2.60437e-1),
         math::make_fix64(-1.44444e-4),
         math::make_fix64(-2.22222e-9),
         math::make_fix64(+5.55556e-9),
     };
-    math::fix64 oble = OBLE_COEFS[3];
+    fix64 oble = OBLE_COEFS[3];
     oble = math::fast_mul(oble, ucen) + OBLE_COEFS[2];
     oble = math::fast_mul(oble, ucen) + OBLE_COEFS[1];
-    oble = math::fast_mul(oble, ucen) + OBLE_COEFS[0];
-    // true longitude of the Sun on the ecliptic
-    constexpr int32_t CF = int32_t(jieqi::chunfen);
-    int32_t ljie = math::pymod<int32_t>(cjie - CF, 24);
-    int64_t last = cjie_to_usec(cjie);
-    int64_t next = cjie_to_usec(cjie + 1);
-    int64_t past = usec - last, jdur = next - last;
-    int64_t pscf = ljie * jdur + past; // since `chunfen`
-    math::fix64 qlon = math::fast_div(2 * pscf, 3 * jdur);
-    // hour angle bias from obliquity
-    math::fix64 veso = 1_fix - math::cosq(oble);
-    math::fix64 s4tl = math::sinq(qlon);
-    math::fix64 s2tl = math::sinq(qlon >> 1);
-    math::fix64 hobl = (s2tl - (s4tl >> 1)) >> 1;
+    return math::fast_mul(oble, ucen) + OBLE_COEFS[0];
+}
+
+// equation of time (EoT) in second
+constexpr fix64 usec_to_eots(int64_t usec, int32_t cjie) noexcept {
+    using namespace math::literal;
+    fix64 ucen = usec_to_ucen(usec); // centuries since J2000
+    fix64 ecco = ucen_to_ecco(ucen); // eccentricity of orbit
+    fix64 q2ma = usec_to_q2ma(usec); // 2x mean anomaly
+    fix64 s2ma = math::sinq(q2ma); // sin of 2x mano
+    fix64 s1ma = math::sinq(q2ma >> 1); // sin of mano
+    fix64 hecc = math::fast_mul(ecco, s2ma); // HA bias from ecc
+    hecc = -hecc - (hecc >> 2);
+    hecc = math::fast_mul(ecco, hecc - 2 * s1ma);
+    fix64 oble = ucen_to_oble(ucen); // obliquity of ecliptic
+    fix64 q4tl = usec_to_q4tl(usec, cjie); // 4x true longitude
+    fix64 veso = 1_fix - math::cosq(oble); // 1 - cos of obl
+    fix64 s4tl = math::sinq(q4tl); // sin of 4x true lon
+    fix64 s2tl = math::sinq(q4tl >> 1); // sin of 2x true lon
+    fix64 hobl = (s2tl - (s4tl >> 1)) >> 1; // HA bias from obl
     hobl = math::fast_mul(hobl, veso) + (s2tl >> 1);
     hobl = math::fast_mul(hobl, veso);
-    // time bias from hour angles
-    constexpr double HAT_DBL = 13750.987083139757010431557;
-    constexpr math::fix64 HAT_FIX = math::make_fix64(HAT_DBL);
-    return math::fair_mul(HAT_FIX, hecc + hobl);
+    fix64 hsum = hecc + hobl; // total hour angle bias
+    constexpr fix64 HATF = math::make_fix64(-1.2916860243e-2);
+    return 13751 * hsum + math::fast_mul(HATF, hsum);
 }
 
 } // namespace _rst: real solar time
 
 constexpr bazi usec_to_bazi(int64_t usec, double lon) noexcept {
     int32_t cjie = usec_to_cjie(usec);
-    math::fix64 flon = math::make_fix64(lon);
-    math::fix64 bias_lon = _rst::bias_lon(flon);
-    math::fix64 bias_eot = _rst::bias_eot(usec, cjie);
+    math::fix64 bias_lon = 240 * math::make_fix64(lon);
+    math::fix64 bias_eot = _rst::usec_to_eots(usec, cjie);
     math::fix64 bias_rst = bias_lon + bias_eot;
     int64_t rsec = usec + math::safe_int(bias_rst);
     int64_t bshi = math::pydiv<int64_t>(rsec + 3600, 7200);
