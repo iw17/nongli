@@ -35,7 +35,7 @@ constexpr uint64_t operator""_u64(_uintmax n) noexcept {
 
 } // namespace literal
 
-[[noreturn]] void unreachable() {
+[[noreturn]] inline void unreachable() {
 #ifdef _MSC_VER // MSVC
     __assume(false);
 #else // GCC or Clang
@@ -55,27 +55,17 @@ Dest> bit_cast(Src val) noexcept {
 namespace _sct { // struct
 
 template <uint64_t N>
-struct uint; // incomplete type
+struct uint {}; // `type` not defined
 
-template <>
-struct uint<1_u64> {
-    using type = uint8_t;
-};
+#define IW_UINT_SPECIALIZATION(N, T) \
+template <> struct uint<N> { using type = T; };
 
-template <>
-struct uint<2_u64> {
-    using type = uint16_t;
-};
+IW_UINT_SPECIALIZATION(1_u64, uint8_t)
+IW_UINT_SPECIALIZATION(2_u64, uint16_t)
+IW_UINT_SPECIALIZATION(4_u64, uint32_t)
+IW_UINT_SPECIALIZATION(8_u64, uint64_t)
 
-template <>
-struct uint<4_u64> {
-    using type = uint32_t;
-};
-
-template <>
-struct uint<8_u64> {
-    using type = uint64_t;
-};
+#undef IW_UINT_SPECIALIZATION
 
 } // namespace _sct
 
