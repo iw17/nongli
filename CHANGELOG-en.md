@@ -6,6 +6,10 @@
 
 ## [Unreleased]
 
+### Added
+
+* Conversions from all `int`s and `float`s by `make_fix64`.
+
 ### Changed
 
 * Exception on parsing invalid name in `hanzi.py`.

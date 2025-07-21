@@ -2,7 +2,7 @@
 #define IW_MATH_HPP 20250205L
 
 #include <cstdint>
-#include <limits>
+#include <type_traits>
 
 #include "prestd.hpp"
 
@@ -87,12 +87,19 @@ constexpr int64_t pour_int64(fix64 a) noexcept {
     return static_cast<int64_t>(a);
 }
 
-constexpr fix64 make_fix64(int64_t n) noexcept {
-    return fill_fix64(n << _fix::FBITS);
+template <class Int>
+constexpr std::enable_if_t<
+    std::is_integral_v<Int>,
+fix64> make_fix64(Int n) noexcept {
+    int64_t nv = int64_t(n) << _fix::FBITS;
+    return fill_fix64(nv);
 }
 
-constexpr fix64 make_fix64(double d) noexcept {
-    double dval = _fix::SCALE * d;
+template <class Float>
+constexpr std::enable_if_t<
+    std::is_floating_point_v<Float>,
+fix64> make_fix64(Float d) noexcept {
+    Float dval = _fix::SCALE * d;
     int64_t ival = half_up<int64_t>(dval);
     return fill_fix64(ival);
 }
@@ -120,13 +127,11 @@ using prestd::literal::_uintmax;
 using _floatmax = long double;
 
 constexpr fix64 operator""_fix(_uintmax n) noexcept {
-    return make_fix64(int64_t(n));
+    return make_fix64(n);
 }
 
 constexpr fix64 operator""_fix(_floatmax d) noexcept {
-    _floatmax dval = _fix::SCALE * d;
-    int64_t ival = dval + (d < 0.0L ? -0.5L : 0.5L);
-    return fill_fix64(ival);
+    return make_fix64(d);
 }
 
 } // namespace literal
