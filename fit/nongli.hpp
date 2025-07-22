@@ -454,13 +454,13 @@ constexpr fix64 usec_to_ucen(int64_t usec) noexcept {
 // eccentricity of the Earth's orbit
 constexpr fix64 ucen_to_ecco(fix64 ucen) noexcept {
     constexpr fix64 ECCO_COEFS[] = {
-        math::make_fix64(+1.67086e-2),
-        math::make_fix64(-4.19300e-5),
         math::make_fix64(-1.26000e-7),
+        math::make_fix64(-4.19300e-5),
+        math::make_fix64(+1.67086e-2),
     };
-    fix64 ecco = ECCO_COEFS[2];
+    fix64 ecco = ECCO_COEFS[0];
     ecco = math::fast_mul(ecco, ucen) + ECCO_COEFS[1];
-    return math::fast_mul(ecco, ucen) + ECCO_COEFS[0];
+    return math::fast_mul(ecco, ucen) + ECCO_COEFS[2];
 }
 
 // mean anomaly (in 1/8 round) of the Earth
@@ -474,15 +474,15 @@ constexpr fix64 usec_to_q2ma(int64_t usec) noexcept {
 // obliquity of the ecliptic
 constexpr fix64 ucen_to_oble(fix64 ucen) noexcept {
     constexpr fix64 OBLE_COEFS[] = {
-        math::make_fix64(+2.60437e-1),
-        math::make_fix64(-1.44444e-4),
-        math::make_fix64(-2.22222e-9),
         math::make_fix64(+5.55556e-9),
+        math::make_fix64(-2.22222e-9),
+        math::make_fix64(-1.44444e-4),
+        math::make_fix64(+2.60437e-1),
     };
-    fix64 oble = OBLE_COEFS[3];
-    oble = math::fast_mul(oble, ucen) + OBLE_COEFS[2];
+    fix64 oble = OBLE_COEFS[0];
     oble = math::fast_mul(oble, ucen) + OBLE_COEFS[1];
-    return math::fast_mul(oble, ucen) + OBLE_COEFS[0];
+    oble = math::fast_mul(oble, ucen) + OBLE_COEFS[2];
+    return math::fast_mul(oble, ucen) + OBLE_COEFS[3];
 }
 
 // equation of time (EoT) in second

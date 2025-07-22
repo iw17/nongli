@@ -31,21 +31,28 @@ constexpr T clip(T val, T min, T max) noexcept {
 }
 
 template <class Int, class Float>
-constexpr Int half_up(Float fval) noexcept {
+constexpr std::enable_if_t<
+    std::is_integral_v<Int> &&
+    std::is_arithmetic_v<Float>,
+Int> half_up(Float fval) noexcept {
     constexpr Float HALF = Float(0.5);
     Int ival = Int(fval + HALF);
     return ival - (ival - fval > HALF);
 }
 
 template <class Int>
-constexpr Int pydiv(Int num, Int den) noexcept {
+constexpr std::enable_if_t<
+    std::is_integral_v<Int>,
+Int> pydiv(Int num, Int den) noexcept {
     Int quot = num / den, rem = num % den;
     bool cyc = rem != 0 && (den < 0) != (rem < 0);
     return quot - cyc;
 }
 
 template <class Int>
-constexpr Int pymod(Int num, Int den) noexcept {
+constexpr std::enable_if_t<
+    std::is_integral_v<Int>,
+Int> pymod(Int num, Int den) noexcept {
     Int rem = num % den;
     bool cyc = rem != 0 && (den < 0) != (rem < 0);
     return rem + den * cyc;
@@ -57,13 +64,17 @@ struct quotrem { // quot, rem
 };
 
 template <class Int>
-constexpr quotrem<Int> cdivmod(Int num, Int den) noexcept {
+constexpr std::enable_if_t<
+    std::is_integral_v<Int>,
+quotrem<Int>> cdivmod(Int num, Int den) noexcept {
     Int quot = num / den, rem = num % den;
     return quotrem<Int>{quot, rem};
 }
 
 template <class Int>
-constexpr quotrem<Int> pydivmod(Int num, Int den) noexcept {
+constexpr std::enable_if_t<
+    std::is_integral_v<Int>,
+quotrem<Int>> pydivmod(Int num, Int den) noexcept {
     Int quot = num / den, rem = num % den;
     bool cyc = rem != 0 && (den < 0) != (rem < 0);
     return quotrem<Int>{quot - cyc, rem + den * cyc};
@@ -233,22 +244,22 @@ namespace _tiny {
 constexpr fix64 cosq(fix64 x) noexcept {
     // coefficients of Taylor series
     constexpr fix64 COEFS[] = {
-        make_fix64(+1.000000000000000000000e-0),
-        make_fix64(-1.233700550136169827354e-0),
-        make_fix64(+2.536695079010480136366e-1),
-        make_fix64(-2.086348076335296087305e-2),
-        make_fix64(+9.192602748394265802417e-4),
-        make_fix64(-2.520204237306060548105e-5),
         make_fix64(+4.710874778818171503670e-7),
+        make_fix64(-2.520204237306060548105e-5),
+        make_fix64(+9.192602748394265802417e-4),
+        make_fix64(-2.086348076335296087305e-2),
+        make_fix64(+2.536695079010480136366e-1),
+        make_fix64(-1.233700550136169827354e-0),
+        make_fix64(+1.000000000000000000000e-0),
     };
     // using Qin J.S.'s method
-    fix64 x2 = fast_mul(x, x), cosx = COEFS[6];
-    cosx = fast_mul(x2, cosx) + COEFS[5];
-    cosx = fast_mul(x2, cosx) + COEFS[4];
-    cosx = fast_mul(x2, cosx) + COEFS[3];
-    cosx = fast_mul(x2, cosx) + COEFS[2];
+    fix64 x2 = fast_mul(x, x), cosx = COEFS[0];
     cosx = fast_mul(x2, cosx) + COEFS[1];
-    cosx = fast_mul(x2, cosx) + COEFS[0];
+    cosx = fast_mul(x2, cosx) + COEFS[2];
+    cosx = fast_mul(x2, cosx) + COEFS[3];
+    cosx = fast_mul(x2, cosx) + COEFS[4];
+    cosx = fast_mul(x2, cosx) + COEFS[5];
+    cosx = fast_mul(x2, cosx) + COEFS[6];
     return cosx;
 }
 
@@ -256,22 +267,22 @@ constexpr fix64 cosq(fix64 x) noexcept {
 constexpr fix64 sinq(fix64 x) noexcept {
     // coefficients of Taylor series
     constexpr fix64 COEFS[] = {
-        make_fix64(+1.570796326794896619231e-0),
-        make_fix64(-6.459640975062462536558e-1),
-        make_fix64(+7.969262624616704512051e-2),
-        make_fix64(-4.681754135318688100685e-3),
-        make_fix64(+1.604411847873598218727e-4),
-        make_fix64(-3.598843235212085340459e-6),
         make_fix64(+5.692172921967926811775e-8),
+        make_fix64(-3.598843235212085340459e-6),
+        make_fix64(+1.604411847873598218727e-4),
+        make_fix64(-4.681754135318688100685e-3),
+        make_fix64(+7.969262624616704512051e-2),
+        make_fix64(-6.459640975062462536558e-1),
+        make_fix64(+1.570796326794896619231e-0),
     };
     // using Qin J.S.'s method
-    fix64 x2 = fast_mul(x, x), sinc = COEFS[6];
-    sinc = fast_mul(x2, sinc) + COEFS[5];
-    sinc = fast_mul(x2, sinc) + COEFS[4];
-    sinc = fast_mul(x2, sinc) + COEFS[3];
-    sinc = fast_mul(x2, sinc) + COEFS[2];
+    fix64 x2 = fast_mul(x, x), sinc = COEFS[0];
     sinc = fast_mul(x2, sinc) + COEFS[1];
-    sinc = fast_mul(x2, sinc) + COEFS[0];
+    sinc = fast_mul(x2, sinc) + COEFS[2];
+    sinc = fast_mul(x2, sinc) + COEFS[3];
+    sinc = fast_mul(x2, sinc) + COEFS[4];
+    sinc = fast_mul(x2, sinc) + COEFS[5];
+    sinc = fast_mul(x2, sinc) + COEFS[6];
     uint64_t xv = pour_int64(x), cv = pour_int64(sinc);
     uint64_t sv = (xv * cv) >> _fix::FBITS;
     return fill_fix64(sv);
