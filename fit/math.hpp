@@ -19,24 +19,16 @@ using prestd::literal::operator""_u64;
 
 } // namespace literal
 
-template <class T>
-constexpr T clip(T val, T min, T max) noexcept {
-    if (val <= min) {
-        return min;
-    }
-    if (val >= max) {
-        return max;
-    }
-    return val;
-}
-
 template <class Int, class Float>
 constexpr std::enable_if_t<
     std::is_integral_v<Int> &&
     std::is_arithmetic_v<Float>,
 Int> half_up(Float fval) noexcept {
+    if constexpr (std::is_integral_v<Float>) {
+        return Int(fval);
+    }
     constexpr Float HALF = Float(0.5);
-    Int ival = Int(fval + HALF);
+    intmax_t ival = intmax_t(fval + HALF);
     return ival - (ival - fval > HALF);
 }
 
@@ -44,6 +36,9 @@ template <class Int>
 constexpr std::enable_if_t<
     std::is_integral_v<Int>,
 Int> pydiv(Int num, Int den) noexcept {
+    if constexpr (std::is_unsigned_v<Int>) {
+        return num / den;
+    }
     Int quot = num / den, rem = num % den;
     bool cyc = rem != 0 && (den < 0) != (rem < 0);
     return quot - cyc;
@@ -53,6 +48,9 @@ template <class Int>
 constexpr std::enable_if_t<
     std::is_integral_v<Int>,
 Int> pymod(Int num, Int den) noexcept {
+    if constexpr (std::is_unsigned_v<Int>) {
+        return num % den;
+    }
     Int rem = num % den;
     bool cyc = rem != 0 && (den < 0) != (rem < 0);
     return rem + den * cyc;
@@ -76,6 +74,9 @@ constexpr std::enable_if_t<
     std::is_integral_v<Int>,
 quotrem<Int>> pydivmod(Int num, Int den) noexcept {
     Int quot = num / den, rem = num % den;
+    if constexpr (std::is_unsigned_v<Int>) {
+        return quotrem<Int>{quot, rem};
+    }
     bool cyc = rem != 0 && (den < 0) != (rem < 0);
     return quotrem<Int>{quot - cyc, rem + den * cyc};
 }
