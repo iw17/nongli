@@ -14,6 +14,7 @@
 
 * Exception on parsing invalid name in `hanzi.py`.
 * `numpy.polynomial.polynomial.polyfit` used on fittings.
+* Unsigned integers on possible overflows to avoid UBs.
 
 
 ## [1.1.2] - 2025-06-27 六月初三

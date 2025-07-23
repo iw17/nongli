@@ -29,7 +29,8 @@ Int> half_up(Float fval) noexcept {
     }
     constexpr Float HALF = Float(0.5);
     intmax_t ival = intmax_t(fval + HALF);
-    return ival - (ival - fval > HALF);
+    uintmax_t over = ival - fval > HALF;
+    return static_cast<Int>(ival - over);
 }
 
 template <class Int>
@@ -86,7 +87,7 @@ enum class fix64: int64_t {};
 namespace _fix {
 
 constexpr int64_t FBITS = 32;
-constexpr int64_t SCALE = 1_i64 << FBITS;
+constexpr int64_t SCALE = 1_u64 << FBITS;
 constexpr int64_t FPART = SCALE - 1;
 
 } // namespace _fix
@@ -103,7 +104,7 @@ template <class Int>
 constexpr std::enable_if_t<
     std::is_integral_v<Int>,
 fix64> make_fix64(Int n) noexcept {
-    int64_t nv = int64_t(n) << _fix::FBITS;
+    int64_t nv = uint64_t(n) << _fix::FBITS;
     return fill_fix64(nv);
 }
 
@@ -173,7 +174,7 @@ constexpr fix64 operator>>(fix64 a, int64_t n) noexcept {
 }
 
 constexpr fix64 operator<<(fix64 a, int64_t n) noexcept {
-    int64_t av = pour_int64(a);
+    uint64_t av = pour_int64(a);
     return fill_fix64(av << n);
 }
 
@@ -294,7 +295,7 @@ constexpr fix64 sinq(fix64 x) noexcept {
 // cosq(x) = cos(PI/2 * x)
 constexpr fix64 cosq(fix64 x) noexcept {
     constexpr int64_t SBITS = _fix::FBITS - 1;
-    constexpr int64_t SPART = (1_i64 << SBITS) - 1;
+    constexpr int64_t SPART = (1_u64 << SBITS) - 1;
     // PI/4 rad, like a slice of pizza
     constexpr fix64 SLICE = fill_fix64(SPART + 1);
     uint64_t xv = pour_int64(x);
@@ -315,7 +316,7 @@ constexpr fix64 cosq(fix64 x) noexcept {
 // sinq(x) = sin(PI/2 * x)
 constexpr fix64 sinq(fix64 x) noexcept {
     constexpr int64_t SBITS = _fix::FBITS - 1;
-    constexpr int64_t SPART = (1_i64 << SBITS) - 1;
+    constexpr int64_t SPART = (1_u64 << SBITS) - 1;
     // 1/8 of a whole round, like a slice of pizza
     constexpr fix64 SLICE = fill_fix64(SPART + 1);
     uint64_t xv = pour_int64(x);

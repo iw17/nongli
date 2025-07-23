@@ -251,7 +251,7 @@ constexpr int64_t js_ress(int32_t cjie) noexcept {
     auto [iarr, iloc] = math::cdivmod<uint32_t>(isub, data::JS_PAGE);
     const uint8_t *arrs = data::JS_ARRS[iarr];
     // 0x12, 0x34, 0x56 -> 0x412, 0x563
-    uint32_t pair = (arrs[iloc + 1] << 8) | arrs[iloc];
+    uint32_t pair = (uint32_t(arrs[iloc + 1]) << 8) | arrs[iloc];
     return (cjie & 1) ? (pair >> 4) : (pair & 0x0fff);
 }
 
