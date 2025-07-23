@@ -7,31 +7,21 @@ namespace iw17::prestd {
 
 inline namespace literal {
 
-using _uintmax = unsigned long long;
+using uintmax = unsigned long long;
 
-constexpr int16_t operator""_i16(_uintmax n) noexcept {
-    return static_cast<int16_t>(n);
+#define IW_DEFINE_INT_LITERAL(suf, T)               \
+constexpr T operator""_##suf(uintmax n) noexcept {  \
+    return static_cast<T>(n);                       \
 }
 
-constexpr uint16_t operator""_u16(_uintmax n) noexcept {
-    return static_cast<uint16_t>(n);
-}
+IW_DEFINE_INT_LITERAL(i16, int16_t)
+IW_DEFINE_INT_LITERAL(i32, int32_t)
+IW_DEFINE_INT_LITERAL(i64, int64_t)
+IW_DEFINE_INT_LITERAL(u16, uint16_t)
+IW_DEFINE_INT_LITERAL(u32, uint32_t)
+IW_DEFINE_INT_LITERAL(u64, uint64_t)
 
-constexpr int32_t operator""_i32(_uintmax n) noexcept {
-    return static_cast<int32_t>(n);
-}
-
-constexpr uint32_t operator""_u32(_uintmax n) noexcept {
-    return static_cast<uint32_t>(n);
-}
-
-constexpr int64_t operator""_i64(_uintmax n) noexcept {
-    return static_cast<int64_t>(n);
-}
-
-constexpr uint64_t operator""_u64(_uintmax n) noexcept {
-    return static_cast<uint64_t>(n);
-}
+#undef IW_DEFINE_INT_LITERAL
 
 } // namespace literal
 
@@ -43,13 +33,13 @@ constexpr uint64_t operator""_u64(_uintmax n) noexcept {
 #endif // _MSC_VER
 }
 
-template <class Dest, class Src>
+template <class Out, class In>
 [[nodiscard]] constexpr std::enable_if_t<
-    sizeof(Dest) == sizeof(Src) &&
-    std::is_trivially_copyable_v<Dest> &&
-    std::is_trivially_copyable_v<Src>,
-Dest> bit_cast(Src val) noexcept {
-    return __builtin_bit_cast(Dest, val);
+    sizeof(Out) == sizeof(In) &&
+    std::is_trivially_copyable_v<Out> &&
+    std::is_trivially_copyable_v<In>,
+Out> bit_cast(In val) noexcept {
+    return __builtin_bit_cast(Out, val);
 }
 
 namespace _sct { // struct
@@ -67,18 +57,18 @@ IW_UINT_SPECIALIZATION(8_u64, uint64_t)
 
 #undef IW_UINT_SPECIALIZATION
 
-} // namespace _sct
+} // namespace _sct: struct
 
 // only for types with size 1, 2, 4, 8
 template <uint64_t N>
 using uint = typename _sct::uint<N>::type;
 
 // only for types with compact layout
-template <class Src>
+template <class T>
 [[nodiscard]] constexpr std::enable_if_t<
-    std::is_trivially_copyable_v<Src>,
-uint<sizeof(Src)>> uint_cast(Src val) noexcept {
-    return bit_cast<uint<sizeof(Src)>>(val);
+    std::is_trivially_copyable_v<T>,
+uint<sizeof(T)>> uint_cast(T val) noexcept {
+    return bit_cast<uint<sizeof(T)>>(val);
 }
 
 } // namespace iw17::prestd

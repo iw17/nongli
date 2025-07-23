@@ -10,27 +10,22 @@ namespace iw17::math {
 
 inline namespace literal {
 
-using prestd::literal::operator""_i16;
-using prestd::literal::operator""_u16;
-using prestd::literal::operator""_i32;
-using prestd::literal::operator""_u32;
-using prestd::literal::operator""_i64;
-using prestd::literal::operator""_u64;
+using namespace prestd::literal;
 
 } // namespace literal
 
-template <class Int, class Float>
+template <class Out, class In>
 constexpr std::enable_if_t<
-    std::is_integral_v<Int> &&
-    std::is_arithmetic_v<Float>,
-Int> half_up(Float fval) noexcept {
-    if constexpr (std::is_integral_v<Float>) {
-        return Int(fval);
+    std::is_integral_v<Out> &&
+    std::is_arithmetic_v<In>,
+Out> half_up(In fval) noexcept {
+    if constexpr (std::is_integral_v<In>) {
+        return Out(fval);
     }
-    constexpr Float HALF = Float(0.5);
+    constexpr In HALF = In(0.5);
     intmax_t ival = intmax_t(fval + HALF);
     uintmax_t over = ival - fval > HALF;
-    return static_cast<Int>(ival - over);
+    return static_cast<Out>(ival - over);
 }
 
 template <class Int>
@@ -84,13 +79,13 @@ quotrem<Int>> pydivmod(Int num, Int den) noexcept {
 
 enum class fix64: int64_t {};
 
-namespace _fix {
+namespace fix {
 
 constexpr int64_t FBITS = 32;
 constexpr int64_t SCALE = 1_u64 << FBITS;
 constexpr int64_t FPART = SCALE - 1;
 
-} // namespace _fix
+} // namespace fix
 
 constexpr fix64 fill_fix64(int64_t v) noexcept {
     return static_cast<fix64>(v);
@@ -104,7 +99,7 @@ template <class Int>
 constexpr std::enable_if_t<
     std::is_integral_v<Int>,
 fix64> make_fix64(Int n) noexcept {
-    int64_t nv = uint64_t(n) << _fix::FBITS;
+    int64_t nv = uint64_t(n) << fix::FBITS;
     return fill_fix64(nv);
 }
 
@@ -112,38 +107,38 @@ template <class Float>
 constexpr std::enable_if_t<
     std::is_floating_point_v<Float>,
 fix64> make_fix64(Float d) noexcept {
-    Float dval = _fix::SCALE * d;
+    Float dval = fix::SCALE * d;
     int64_t ival = half_up<int64_t>(dval);
     return fill_fix64(ival);
 }
 
 constexpr int64_t fast_int(fix64 a) noexcept {
     int64_t av = pour_int64(a);
-    return av >> _fix::FBITS;
+    return av >> fix::FBITS;
 }
 
 constexpr int64_t safe_int(fix64 a) noexcept {
-    constexpr int64_t HALF = _fix::SCALE / 2;
+    constexpr int64_t HALF = fix::SCALE / 2;
     int64_t av = pour_int64(a);
-    return (av >> _fix::FBITS) + bool(av & HALF);
+    return (av >> fix::FBITS) + bool(av & HALF);
 }
 
 constexpr double show_double(fix64 a) noexcept {
     int64_t av = pour_int64(a);
-    return av / double(_fix::SCALE);
+    return av / double(fix::SCALE);
 }
 
 inline namespace literal {
 
-using prestd::literal::_uintmax;
+using prestd::literal::uintmax;
 
-using _floatmax = long double;
+using floatmax = long double;
 
-constexpr fix64 operator""_fix(_uintmax n) noexcept {
+constexpr fix64 operator""_fix(uintmax n) noexcept {
     return make_fix64(n);
 }
 
-constexpr fix64 operator""_fix(_floatmax d) noexcept {
+constexpr fix64 operator""_fix(floatmax d) noexcept {
     return make_fix64(d);
 }
 
@@ -192,34 +187,34 @@ constexpr fix64 operator*(int64_t n, fix64 b) noexcept {
 constexpr fix64 fast_mul(fix64 a, fix64 b) noexcept {
     uint64_t av = pour_int64(a), bv = pour_int64(b);
     int64_t pv = av * bv; // overflowed bits discarded
-    return fill_fix64(pv >> _fix::FBITS);
+    return fill_fix64(pv >> fix::FBITS);
 }
 
 // neglects overflows and rounds off fractional part
 constexpr fix64 tiny_mul(fix64 a, fix64 b) noexcept {
     uint64_t av = pour_int64(a), bv = pour_int64(b);
-    int64_t pv = av * bv + _fix::SCALE / 2;
-    return fill_fix64(pv >> _fix::FBITS);
+    int64_t pv = av * bv + fix::SCALE / 2;
+    return fill_fix64(pv >> fix::FBITS);
 }
 
 // considers overflows for values possibly reaching 1/2
 constexpr fix64 fair_mul(fix64 a, fix64 b) noexcept {
     int64_t av = pour_int64(a), bv = pour_int64(b);
-    uint64_t ah = av >> _fix::FBITS, al = av & _fix::FPART;
-    uint64_t bh = bv >> _fix::FBITS, bl = bv & _fix::FPART;
+    uint64_t ah = av >> fix::FBITS, al = av & fix::FPART;
+    uint64_t bh = bv >> fix::FBITS, bl = bv & fix::FPART;
     uint64_t hi = av * bh + ah * bl;
-    uint64_t lo = (al * bl) >> _fix::FBITS;
+    uint64_t lo = (al * bl) >> fix::FBITS;
     return fill_fix64(hi + lo);
 }
 
 // considers overflows and rounds off fractional part
 constexpr fix64 safe_mul(fix64 a, fix64 b) noexcept {
-    constexpr uint64_t HALF = _fix::SCALE / 2;
+    constexpr uint64_t HALF = fix::SCALE / 2;
     int64_t av = pour_int64(a), bv = pour_int64(b);
-    uint64_t ah = av >> _fix::FBITS, al = av & _fix::FPART;
-    uint64_t bh = bv >> _fix::FBITS, bl = bv & _fix::FPART;
+    uint64_t ah = av >> fix::FBITS, al = av & fix::FPART;
+    uint64_t bh = bv >> fix::FBITS, bl = bv & fix::FPART;
     uint64_t hi = av * bh + ah * bl, lv = al * bl;
-    uint64_t lo = (lv >> _fix::FBITS) + bool(lv & HALF);
+    uint64_t lo = (lv >> fix::FBITS) + bool(lv & HALF);
     return fill_fix64(hi + lo);
 }
 
@@ -230,7 +225,7 @@ constexpr fix64 operator/(fix64 a, int64_t n) noexcept {
 
 // small numerator and small denominator
 constexpr fix64 fast_div(int64_t a, int64_t b) noexcept {
-    int64_t av = uint64_t(a) << _fix::FBITS;
+    int64_t av = uint64_t(a) << fix::FBITS;
     return fill_fix64(av / b);
 }
 
@@ -285,8 +280,9 @@ constexpr fix64 sinq(fix64 x) noexcept {
     sinc = fast_mul(x2, sinc) + COEFS[4];
     sinc = fast_mul(x2, sinc) + COEFS[5];
     sinc = fast_mul(x2, sinc) + COEFS[6];
+    // results may be incorrect via `fast_mul`
     uint64_t xv = pour_int64(x), cv = pour_int64(sinc);
-    uint64_t sv = (xv * cv) >> _fix::FBITS;
+    uint64_t sv = (xv * cv) >> fix::FBITS;
     return fill_fix64(sv);
 }
 
@@ -294,7 +290,7 @@ constexpr fix64 sinq(fix64 x) noexcept {
 
 // cosq(x) = cos(PI/2 * x)
 constexpr fix64 cosq(fix64 x) noexcept {
-    constexpr int64_t SBITS = _fix::FBITS - 1;
+    constexpr int64_t SBITS = fix::FBITS - 1;
     constexpr int64_t SPART = (1_u64 << SBITS) - 1;
     // PI/4 rad, like a slice of pizza
     constexpr fix64 SLICE = fill_fix64(SPART + 1);
@@ -315,7 +311,7 @@ constexpr fix64 cosq(fix64 x) noexcept {
 
 // sinq(x) = sin(PI/2 * x)
 constexpr fix64 sinq(fix64 x) noexcept {
-    constexpr int64_t SBITS = _fix::FBITS - 1;
+    constexpr int64_t SBITS = fix::FBITS - 1;
     constexpr int64_t SPART = (1_u64 << SBITS) - 1;
     // 1/8 of a whole round, like a slice of pizza
     constexpr fix64 SLICE = fill_fix64(SPART + 1);
